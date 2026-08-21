@@ -1,0 +1,14 @@
+/* Fase 1 - Estilos iniciales MVP */
+.phase1-container {
+    padding: var(--spacing-lg);
+}
+
+.phase1-welcome {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.phase1-welcome h1 {
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
+}
