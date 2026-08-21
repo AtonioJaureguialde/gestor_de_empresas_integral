@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CleanOps - Gestión de Limpieza Profesional</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="src/css/variables.css">
+    <link rel="stylesheet" href="src/css/layout.css">
+    <link rel="stylesheet" href="src/css/components.css">
+    <link rel="stylesheet" href="src/css/phases/phase1.css">
+    
+    <!-- Meta PWA -->
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Sistema de gestión de servicios de limpieza profesional">
+    <link rel="manifest" href="src/manifest.json">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="main-header">
+            <nav class="navbar">
+                <div class="logo">CleanOps</div>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="#calendar" data-view="calendar">Calendario</a></li>
+                    <li><a href="#services" data-view="services">Servicios</a></li>
+                    <li><a href="#incidents" data-view="incidents">Incidencias</a></li>
+                    <li><a href="#chat" data-view="chat">Chat</a></li>
+                    <li><a href="#billing" data-view="billing">Facturación</a></li>
+                    <li><a href="#reports" data-view="reports">Reportes</a></li>
+                    <li><a href="#routes" data-view="routes">Rutas</a></li>
+                    <li><a href="#portal" data-view="portal">Portal Cliente</a></li>
+                    <li><a href="#clients" data-view="clients">Clientes</a></li>
+                    <li><a href="#employees" data-view="employees">Empleados</a></li>
+                </ul>
+                <div class="user-menu">
+                    <span id="userName">Usuario</span>
+                    <button id="logoutBtn" class="btn-logout">Salir</button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- El contenido se renderiza dinámicamente -->
+        </main>
+
+        <!-- Modal Container -->
+        <div id="modalContainer" class="modal-container"></div>
+
+        <!-- Toast Container -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script type="module" src="src/js/app.js"></script>
+</body>
+</html>
