@@ -1,0 +1,27 @@
+{
+  "name": "cleanops",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión de Limpieza Profesional",
+  "main": "src/js/app.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "eslint src/**/*.js"
+  },
+  "keywords": [
+    "limpieza",
+    "gestion",
+    "servicios",
+    "cleaning",
+    "management"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0",
+    "eslint": "^8.0.0"
+  }
+}
