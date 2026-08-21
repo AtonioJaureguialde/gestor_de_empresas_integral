@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CleanOps · Fase 3 Crecimiento y negocio</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.2.5/index.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.2.5/600.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.2.5/700.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.1/dist/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    :root{
+      --bg:#f4f7fb; --card:#fff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+      --primary:#0284c7; --primary2:#06b6d4; --danger:#dc2626; --ok:#16a34a; --warn:#d97706;
+      --radius:16px; --shadow:0 10px 30px rgba(2,8,23,.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+    .app{display:flex;min-height:100vh}
+    #sidebar{width:252px;background:#0b1220;color:#cbd5e1;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:60;transition:transform .3s}
+    .brand{padding:18px 16px;border-bottom:1px solid rgba(148,163,184,.15);font-weight:800;font-size:18px;color:#fff;display:flex;align-items:center;gap:10px}
+    .brand span{background:linear-gradient(90deg,var(--primary),var(--primary2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    nav{padding:12px 10px;display:flex;flex-direction:column;gap:4px;flex:1;overflow:auto}
+    .nav-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;border:0;border-radius:12px;background:transparent;color:#cbd5e1;font:600 13.5px 'Inter';cursor:pointer;text-align:left;width:100%}
+    .nav-btn:hover{background:rgba(148,163,184,.12);color:#fff}
+    .nav-btn.active{background:linear-gradient(90deg,var(--primary),var(--primary2));color:#fff}
+    .side-foot{padding:14px;border-top:1px solid rgba(148,163,184,.15);font-size:12px;color:#94a3b8}
+    main{flex:1;min-width:0;display:flex;flex-direction:column}
+    header{position:sticky;top:0;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 22px;display:flex;align-items:center;gap:12px;z-index:30}
+    h1{margin:0;font-size:18px;flex:1}
+    .btn{border:0;border-radius:11px;padding:10px 16px;font:700 13px 'Inter';cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.15s;text-decoration:none}
+    .btn-primary{background:linear-gradient(90deg,var(--primary),var(--primary2));color:#fff}
+    .btn-primary:hover{filter:brightness(1.06)}
+    .btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+    .btn-danger{background:#fee2e2;color:var(--danger)}
+    .btn-ok{background:#dcfce7;color:#15803d}
+    .btn-warn{background:#fef3c7;color:#b45309}
+    .btn-whatsapp{background:#25d366;color:#fff}
+    .btn-sm{padding:7px 11px;font-size:12px;border-radius:9px}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    #content{padding:22px;max-width:1200px;margin:0 auto;width:100%}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+    .table-card{padding:0;overflow:hidden}
+    table{width:100%;border-collapse:collapse}
+    th{padding:12px 16px;text-align:left;font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:700;letter-spacing:.5px;background:#f8fafc}
+    td{padding:12px 16px;border-top:1px solid var(--line);vertical-align:middle}
+    .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .cal-day-name{text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;padding:6px 0}
+    .cal-cell{background:#fff;border:1px solid var(--line);border-radius:12px;min-height:100px;padding:8px;display:flex;flex-direction:column;gap:6px;transition:.15s}
+    .cal-cell:hover{border-color:var(--primary)}
+    .cal-cell.other{opacity:.45;background:#f8fafc}
+    .cal-cell.today{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+    .cal-num{font-size:12px;font-weight:700;color:var(--muted)}
+    .cal-events{display:flex;flex-direction:column;gap:4px}
+    .cal-event{border:0;border-radius:6px;padding:4px 6px;font-size:10px;font-weight:700;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+    .cal-event.canceled{text-decoration:line-through;opacity:.75}
+    .cal-add{margin-top:auto;border:1px dashed var(--line);background:#fff;border-radius:8px;color:var(--primary);font-weight:800;cursor:pointer;padding:4px}
+    .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;color:var(--muted);background:#fff;border-radius:16px;box-shadow:var(--shadow)}
+    .empty-icon{font-size:48px;margin-bottom:16px;opacity:.65}
+    .empty-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px}
+    .empty-desc{font-size:13px;max-width:320px;line-height:1.5}
+    .empty-note{color:var(--muted);text-align:center;font-size:13px;font-weight:600;padding:10px 0 0}
+    .field{margin-bottom:18px;position:relative}
+    label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+    input,select,textarea{width:100%;font:500 14px 'Inter';border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;outline:none;transition:.15s;color:var(--ink)}
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(2,132,199,.12)}
+    input.invalid,select.invalid,textarea.invalid{border-color:var(--danger);box-shadow:0 0 0 3px rgba(220,38,38,.1)}
+    .error-msg{position:absolute;bottom:-16px;left:0;font-size:11px;color:var(--danger);font-weight:600;opacity:0;transition:.15s;pointer-events:none}
+    .field.has-error .error-msg{opacity:1}
+    .form-alert{display:none;background:#fee2e2;color:#b91c1c;padding:11px 13px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:14px}
+    .overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:90;padding:16px;opacity:0;pointer-events:none;transition:.2s}
+    .overlay.open{opacity:1;pointer-events:auto}
+    .modal{background:#fff;border-radius:20px;max-width:680px;width:100%;max-height:92vh;overflow:auto;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.3);transform:translateY(20px);transition:.2s}
+    .overlay.open .modal{transform:none}
+    .modal h2{margin:0 0 18px;font-size:18px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .modal-actions{display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+    #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#0f172a;color:#fff;padding:12px 24px;border-radius:999px;font-weight:700;font-size:13px;z-index:120;transition:.3s;opacity:0;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+    #toast.show{transform:translateX(-50%);opacity:1}
+    #toast.err{background:var(--danger)}
+    #toast.ok{background:var(--ok)}
+    .menu-toggle{display:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 10px;cursor:pointer;font-size:16px}
+    .user-chip{font-size:12px;font-weight:700;color:var(--muted);background:#f8fafc;border:1px solid var(--line);padding:7px 10px;border-radius:999px}
+    .info-box{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:16px;font-size:13px;line-height:1.7}
+    .demo-box{margin-top:16px;padding:12px;background:#f0f9ff;border-radius:10px;font-size:12px;color:#0369a1;line-height:1.7}
+    .status-pill{display:inline-block;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:800}
+    .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow:auto}
+    .tab-btn{background:transparent;border:0;padding:10px 14px;font:700 13px 'Inter';color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+    .tab-btn:hover{color:var(--ink)}
+    .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+    .task{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#fff}
+    .task.done{background:#f0fdf4;border-color:#bbf7d0}
+    .task.done span{text-decoration:line-through;color:var(--muted)}
+    .task input[type=checkbox]{width:20px;height:20px;accent-color:var(--primary);cursor:pointer}
+    .task span{flex:1;font-weight:600;font-size:14px}
+    .evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:10px}
+    .evidence-item{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#f8fafc}
+    .evidence-item img{width:100%;height:100%;object-fit:cover;display:block}
+    .evidence-remove{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);color:#fff;border:0;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px}
+    .signature-pad{border:2px dashed var(--line);border-radius:12px;background:#fff;touch-action:none;display:block;width:100%;max-width:500px}
+    .signature-pad.signed{border-style:solid;border-color:var(--primary)}
+    .chat{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding:10px;background:#f8fafc;border-radius:12px;margin-bottom:12px}
+    .msg{max-width:80%;padding:10px 13px;border-radius:14px;font-size:13px;background:#e2e8f0}
+    .msg.mine{align-self:flex-end;background:#e0f2fe}
+    .msg small{display:block;font-size:10px;color:var(--muted);margin-top:4px;font-weight:600}
+    .msg .who{font-size:10.5px;font-weight:800;color:var(--primary);display:block;margin-bottom:3px}
+    .msg.mine .who{color:#0369a1}
+    .msg-attach{margin-top:6px}
+    .msg-attach img{max-width:180px;border-radius:8px;display:block;margin-top:4px}
+    .chat-input{display:flex;gap:8px;align-items:flex-end}
+    .chat-input input{flex:1}
+    .chat-input .file-label{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;font-weight:700;font-size:14px}
+    .chat-input input[type=file]{display:none}
+    .timeline{border-left:3px solid var(--primary);padding-left:16px;margin:10px 0}
+    .timeline-item{position:relative;padding:8px 0 16px}
+    .timeline-item::before{content:'';position:absolute;left:-23px;top:12px;width:13px;height:13px;border-radius:50%;background:var(--primary);border:3px solid #fff;box-shadow:0 0 0 1px var(--primary)}
+    .timeline-item strong{display:block;font-size:13px}
+    .timeline-item small{color:var(--muted);font-size:11px}
+    .sla-bar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:12px;font-weight:700;font-size:13px}
+    .sla-bar.ok{background:#dcfce7;color:#15803d}
+    .sla-bar.warn{background:#fef3c7;color:#b45309}
+    .sla-bar.late{background:#fee2e2;color:#b91c1c}
+    .checkin-box{padding:14px;border-radius:12px;background:#f8fafc;border:1px solid var(--line);margin-bottom:12px}
+    .checkin-box .row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+    .checkin-box.done{background:#dcfce7;border-color:#86efac}
+    .qr-wrap{display:flex;justify-content:center;padding:14px;background:#fff;border-radius:12px;border:1px solid var(--line)}
+    .notifs{position:fixed;top:80px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:200;max-width:320px}
+    .notif{background:#fff;border-left:4px solid var(--primary);border-radius:10px;box-shadow:0 10px 30px rgba(2,8,23,.15);padding:12px 14px;font-size:13px;animation:slideIn .3s}
+    .notif.warn{border-left-color:var(--warn)}
+    .notif.danger{border-left-color:var(--danger)}
+    .notif small{display:block;color:var(--muted);font-size:11px;margin-top:4px;font-weight:600}
+    @keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+    .badge-count{background:var(--danger);color:#fff;border-radius:999px;padding:1px 7px;font-size:10px;font-weight:800;margin-left:auto}
+    /* Phase 3 UI */
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:18px}
+    .kpi{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:18px;display:flex;gap:14px;align-items:center}
+    .kpi-ico{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px}
+    .kpi b{font-size:22px;font-weight:800;display:block;line-height:1.1}
+    .kpi span{color:var(--muted);font-size:12px;font-weight:600}
+    .kpi small{display:block;color:var(--ok);font-size:11px;font-weight:700;margin-top:4px}
+    .invoice-preview{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;font-size:13px;line-height:1.6}
+    .invoice-preview h3{margin:0 0 8px;font-size:16px}
+    .invoice-preview table{margin-top:10px}
+    .invoice-preview .tot{font-size:15px;font-weight:800;text-align:right;padding-top:10px;border-top:2px solid var(--ink)}
+    .route-map{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px}
+    .route-map svg{width:100%;height:340px;display:block}
+    .route-stop{display:flex;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;align-items:center}
+    .route-stop .idx{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+    .route-stop .info{flex:1;min-width:0}
+    .route-stop .info b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .route-stop .info small{color:var(--muted);font-size:11px}
+    .quote-line{display:grid;grid-template-columns:2fr 80px 100px 100px auto;gap:8px;align-items:center;margin-bottom:6px}
+    .quote-line input,.quote-line select{padding:7px 9px;font-size:13px}
+    .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+    .filter-bar input,.filter-bar select{max-width:180px}
+    .portal-hero{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-radius:18px;padding:22px;margin-bottom:18px}
+    .portal-hero h2{margin:0 0 6px;font-size:22px}
+    .portal-hero p{margin:0;opacity:.9;font-size:14px}
+    .action-row{display:flex;gap:8px;flex-wrap:wrap}
+    .focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+    @media(max-width:900px){
+      #sidebar{position:fixed;left:0;top:0;transform:translateX(-100%)}
+      #sidebar.open{transform:none}
+      .menu-toggle{display:block}
+      .form-row,.quote-line{grid-template-columns:1fr}
+      .user-chip{display:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside id="sidebar" aria-label="Menú lateral"></aside>
+    <main>
+      <header>
+        <button class="menu-toggle" data-action="toggle-menu" aria-label="Abrir o cerrar menú">☰</button>
+        <h1 id="page-title">CleanOps</h1>
+        <span style="flex:1"></span>
+        <div id="auth-area"></div>
+      </header>
+      <div id="content" role="main"></div>
+    </main>
+  </div>
+
+  <div class="overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal" id="modal-content"></div>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div class="notifs" id="notifs" aria-live="polite"></div>
+
+  <script>
+    /* ===========================================================
+       CLEANOPS - FASE 1 + 2 + 3
+       Base sólida + Operación en campo + Crecimiento y negocio
+       =========================================================== */
+
+    const DB_KEY = 'cleanops_phase3_db_v1';
+    const SESSION_KEY = 'cleanops_phase3_session_v1';
+
+    const STATUS_MAP = {
+      programado: ['Programado', '#e0f2fe', '#0369a1'],
+      en_camino: ['En camino', '#fef3c7', '#b45309'],
+      iniciado: ['En curso', '#ede9fe', '#6d28d9'],
+      finalizado: ['Finalizado', '#dcfce7', '#15803d'],
+      validado: ['Validado', '#bbf7d0', '#166534'],
+      cancelado: ['Cancelado', '#fee2e2', '#b91c1c']
+    };
+
+    const INCIDENT_STATUS = {
+      abierta: ['Abierta', '#fee2e2', '#b91c1c'],
+      en_proceso: ['En proceso', '#fef3c7', '#b45309'],
+      resuelta: ['Resuelta', '#dcfce7', '#15803d'],
+      cerrada: ['Cerrada', '#e2e8f0', '#475569']
+    };
+
+    const INCIDENT_PRI = { alta: ['Alta', 4], media: ['Media', 24], baja: ['Baja', 72] };
+
+    const INVOICE_STATUS = {
+      borrador: ['Borrador', '#e2e8f0', '#475569'],
+      enviada: ['Enviada', '#e0f2fe', '#0369a1'],
+      pagada: ['Pagada', '#dcfce7', '#15803d'],
+      vencida: ['Vencida', '#fee2e2', '#b91c1c'],
+      cancelada: ['Cancelada', '#f1f5f9', '#64748b']
+    };
+
+    const QUOTE_STATUS = {
+      borrador: ['Borrador', '#e2e8f0', '#475569'],
+      enviado: ['Enviado', '#e0f2fe', '#0369a1'],
+      aceptado: ['Aceptado', '#dcfce7', '#15803d'],
+      rechazado: ['Rechazado', '#fee2e2', '#b91c1c']
+    };
+
+    const ROLE_LABELS = {
+      admin: 'Administración',
+      manager: 'Gerencia',
+      staff: 'Personal',
+      client: 'Cliente'
+    };
+
+    const PERMISSIONS = {
+      admin: ['calendar', 'clients', 'employees', 'services', 'incidents', 'chat', 'billing', 'reports', 'routes'],
+      manager: ['calendar', 'clients', 'employees', 'services', 'incidents', 'chat', 'billing', 'reports', 'routes'],
+      staff: ['calendar', 'services', 'incidents', 'chat', 'routes'],
+      client: ['portal']
+    };
+
+    const safeStorage = {
+      get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+      remove(k) { try { localStorage.removeItem(k); } catch (e) {} }
+    };
+
+    function localISO(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function addDaysISO(n) { const d = new Date(); d.setDate(d.getDate() + n); return localISO(d); }
+    function fmtDateTime(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    function money(n) { return (Number(n) || 0).toFixed(2) + ' €'; }
+
+    function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim()); }
+    function isValidPhone(v) { return /^[+0-9()\s.-]{6,20}$/.test(String(v || '').trim()); }
+    function isValidStatus(v) { return Object.prototype.hasOwnProperty.call(STATUS_MAP, v); }
+
+    class BackendAPI {
+      constructor() {
+        this.db = this.load();
+        let session = null;
+        try { session = JSON.parse(safeStorage.get(SESSION_KEY) || 'null'); } catch (e) { session = null; }
+        this.session = session;
+        if (this.session && !this.db.users.some(u => u.id === this.session.userId)) {
+          this.session = null;
+          safeStorage.remove(SESSION_KEY);
+        }
+      }
+
+      load() {
+        try {
+          const raw = safeStorage.get(DB_KEY);
+          if (raw) {
+            const p = JSON.parse(raw);
+            if (p && p.users && p.clients && p.employees && p.services) {
+              ['incidents', 'messages', 'attachments', 'invoices', 'quotes'].forEach(k => { if (!p[k]) p[k] = []; });
+              // Auto-link client users
+              p.users.forEach(u => {
+                if (u.role === 'client' && !u.clientId) {
+                  const c = p.clients.find(x => x.email && x.email === u.email);
+                  if (c) u.clientId = c.id;
+                }
+              });
+              return p;
+            }
+          }
+        } catch (e) {}
+        return this.seed();
+      }
+
+      seed() {
+        return {
+          users: [
+            { id: 'u1', email: 'admin@cleanops.com', password: 'admin123', role: 'admin', name: 'Laura Admin', employeeId: null, clientId: null },
+            { id: 'u2', email: 'gerente@cleanops.com', password: 'manager123', role: 'manager', name: 'Marta Gerente', employeeId: null, clientId: null },
+            { id: 'u3', email: 'maria@cleanops.com', password: 'staff123', role: 'staff', name: 'María Pérez', employeeId: 'e1', clientId: null },
+            { id: 'u4', email: 'carlos@cleanops.com', password: 'staff123', role: 'staff', name: 'Carlos Ruiz', employeeId: 'e2', clientId: null },
+            { id: 'u5', email: 'cliente@sonrisa.com', password: 'client123', role: 'client', name: 'Dra. Ana Torres', employeeId: null, clientId: 'c1' },
+            { id: 'u6', email: 'cliente@martinez.com', password: 'client123', role: 'client', name: 'Pedro Martínez', employeeId: null, clientId: 'c2' }
+          ],
+          clients: [
+            { id: 'c1', name: 'Clínica Sonrisa', type: 'Clínica', phone: '+34 611 220 301', address: 'Calle Salud 12, Madrid', email: 'cliente@sonrisa.com', notes: 'Acceso con tarjeta.', taxId: 'B12345678' },
+            { id: 'c2', name: 'Casa Martínez', type: 'Hogar', phone: '+34 622 118 402', address: 'Av. Olmos 8, 3ºB', email: 'cliente@martinez.com', notes: 'El portero abre a las 16:00.', taxId: '' },
+            { id: 'c3', name: 'Oficinas Nova', type: 'Oficina', phone: '+34 633 902 115', address: 'P.º Empresarial 45', email: 'admin@nova.com', notes: 'Limpieza post-obra.', taxId: 'A87654321' }
+          ],
+          employees: [
+            { id: 'e1', name: 'María Pérez', phone: '+34 600 111 222', zone: 'Centro', specialty: 'Oficinas', whatsapp: '+34 600 111 222' },
+            { id: 'e2', name: 'Carlos Ruiz', phone: '+34 600 333 444', zone: 'Norte', specialty: 'Hogares', whatsapp: '+34 600 333 444' }
+          ],
+          services: [
+            { id: 's1', clientId: 'c1', employeeId: 'e1', title: 'Limpieza semanal', date: addDaysISO(0), time: '09:00', type: 'Oficinas', status: 'programado', price: 120,
+              tasks: [{ id: 't1', name: 'Recepción y escritorios', done: false }, { id: 't2', name: 'Baños desinfectados', done: false }, { id: 't3', name: 'Suelos y retirada de basura', done: false }],
+              checkin: null, checkout: null, evidence: [], signature: null, coords: { lat: 40.4168, lng: -3.7038 } },
+            { id: 's2', clientId: 'c2', employeeId: 'e2', title: 'Limpieza general', date: addDaysISO(0), time: '16:00', type: 'Hogar', status: 'programado', price: 80,
+              tasks: [{ id: 't1', name: 'Aspirar y fregar suelos', done: false }, { id: 't2', name: 'Cocina y baños', done: false }],
+              checkin: null, checkout: null, evidence: [], signature: null, coords: { lat: 40.4268, lng: -3.6938 } },
+            { id: 's3', clientId: 'c3', employeeId: 'e1', title: 'Post-obra profunda', date: addDaysISO(1), time: '10:00', type: 'Profunda', status: 'programado', price: 340,
+              tasks: [{ id: 't1', name: 'Retirada de restos', done: false }, { id: 't2', name: 'Desinfección general', done: false }],
+              checkin: null, checkout: null, evidence: [], signature: null, coords: { lat: 40.4568, lng: -3.6838 } },
+            { id: 's5', clientId: 'c2', employeeId: 'e1', title: 'Limpieza general', date: addDaysISO(-1), time: '16:00', type: 'Hogar', status: 'validado', price: 80,
+              tasks: [{ id: 't1', name: 'Limpieza completa', done: true }],
+              checkin: null, checkout: null, evidence: [], signature: null, coords: { lat: 40.4268, lng: -3.6938 } },
+            { id: 's6', clientId: 'c1', employeeId: 'e2', title: 'Limpieza semanal', date: addDaysISO(-7), time: '09:00', type: 'Oficinas', status: 'validado', price: 120,
+              tasks: [{ id: 't1', name: 'Limpieza completa', done: true }],
+              checkin: null, checkout: null, evidence: [], signature: null, coords: { lat: 40.4168, lng: -3.7038 } }
+          ],
+          incidents: [
+            { id: 'i1', serviceId: 's5', type: 'Limpieza incompleta', priority: 'alta', status: 'abierta',
+              createdBy: 'Dra. Ana Torres (Cliente)', createdAt: new Date(Date.now() - 3600000).toISOString(),
+              description: 'El baño principal quedó con manchas en la ducha, hay que repasar.',
+              responsibleId: 'e1', slaDeadline: new Date(Date.now() - 3600000 + 4 * 3600000).toISOString(),
+              timeline: [
+                { at: new Date(Date.now() - 3600000).toISOString(), by: 'Cliente', action: 'Incidencia creada' },
+                { at: new Date(Date.now() - 1800000).toISOString(), by: 'Administración', action: 'Asignada a María Pérez' }
+              ],
+              comments: [{ id: 'm1', fromId: 'u1', fromName: 'Laura Admin', fromRole: 'Empresa', text: 'Lo sentimos, pasará mañana a las 08:30 a corregirlo.', date: new Date(Date.now() - 1800000).toISOString() }]
+            }
+          ],
+          messages: [
+            { id: 'm1', serviceId: 's1', fromId: 'u1', fromName: 'Laura Admin', fromRole: 'Empresa', text: 'Hola María, recuerda llevar productos neutros.', date: new Date(Date.now() - 7200000).toISOString(), attachments: [] }
+          ],
+          invoices: [
+            { id: 'inv1', number: '2026-0001', clientId: 'c1', serviceIds: ['s6'], issueDate: addDaysISO(-6), dueDate: addDaysISO(24),
+              items: [{ description: 'Limpieza semanal oficinas', quantity: 1, unitPrice: 120, tax: 21 }],
+              subtotal: 120, tax: 25.2, total: 145.2, status: 'pagada', notes: 'Pago por transferencia.',
+              paidAt: addDaysISO(-3), timeline: [
+                { at: addDaysISO(-6), action: 'Factura creada' },
+                { at: addDaysISO(-6), action: 'Enviada al cliente' },
+                { at: addDaysISO(-3), action: 'Marcada como pagada' }
+              ]
+            }
+          ],
+          quotes: [],
+          attachments: [],
+          company: {
+            name: 'CleanOps S.L.',
+            taxId: 'B00000000',
+            address: 'Calle Principal 1, Madrid',
+            phone: '+34 900 000 000',
+            email: 'hola@cleanops.com',
+            bank: 'ES00 0000 0000 0000 0000 0000',
+            taxRate: 21
+          }
+        };
+      }
+
+      save() { safeStorage.set(DB_KEY, JSON.stringify(this.db)); }
+      reset() { this.db = this.seed(); this.save(); }
+
+      login(email, password) {
+        const ne = String(email || '').toLowerCase().trim();
+        if (!ne || !password) throw new Error('Credenciales incorrectas');
+        const user = this.db.users.find(u => u.email.toLowerCase() === ne && u.password === password);
+        if (!user) throw new Error('Credenciales incorrectas');
+        this.session = {
+          userId: user.id, role: user.role, name: user.name, email: user.email,
+          employeeId: user.employeeId || null, clientId: user.clientId || null
+        };
+        safeStorage.set(SESSION_KEY, JSON.stringify(this.session));
+        return this.session;
+      }
+
+      logout() { this.session = null; safeStorage.remove(SESSION_KEY); }
+      isAuthenticated() { return !!this.session; }
+      getUser() { return this.session; }
+      hasPermission(m) { return this.isAuthenticated() && (PERMISSIONS[this.session.role] || []).includes(m); }
+      getClient(id) { return this.db.clients.find(c => c.id === id); }
+      getEmployee(id) { return this.db.employees.find(e => e.id === id); }
+      getCompany() { return this.db.company; }
+
+      visibleServices() {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        let arr = this.db.services.slice();
+        if (user.role === 'staff') arr = arr.filter(s => s.employeeId === user.employeeId);
+        else if (user.role === 'client') arr = arr.filter(s => s.clientId === user.clientId);
+        return arr;
+      }
+
+      validate(entity, data, id) {
+        const errors = {};
+        const required = {
+          clients: ['name', 'phone', 'address'],
+          employees: ['name', 'phone', 'zone'],
+          services: ['title', 'clientId', 'employeeId', 'date', 'time'],
+          invoices: ['clientId', 'issueDate', 'dueDate'],
+          quotes: ['clientId']
+        }[entity] || [];
+        required.forEach(f => { if (!data[f] || String(data[f]).trim() === '') errors[f] = 'Campo obligatorio'; });
+        if (entity === 'clients' || entity === 'employees') {
+          if (data.phone && !isValidPhone(data.phone)) errors.phone = 'Teléfono no válido';
+        }
+        if (entity === 'services') {
+          if (data.price !== undefined && data.price !== null && String(data.price).trim() !== '') {
+            const p = Number(data.price); if (isNaN(p) || p < 0) errors.price = 'Precio inválido';
+          }
+          if (data.status && !isValidStatus(data.status)) errors.status = 'Estado no válido';
+          if (!errors.clientId && !this.getClient(data.clientId)) errors.clientId = 'Cliente no válido';
+          if (!errors.employeeId && !this.getEmployee(data.employeeId)) errors.employeeId = 'Empleado no válido';
+          if (!errors.employeeId && !errors.date && !errors.time) {
+            const conflict = this.db.services.find(s => s.employeeId === data.employeeId && s.date === data.date && s.time === data.time && s.id !== id && s.status !== 'cancelado');
+            if (conflict) errors.time = 'Conflicto de agenda';
+          }
+        }
+        if (entity === 'incidents') {
+          if (!data.serviceId) errors.serviceId = 'Servicio obligatorio';
+          if (!data.description || data.description.trim().length < 10) errors.description = 'Mínimo 10 caracteres';
+          if (!data.type) errors.type = 'Selecciona un tipo';
+        }
+        if (entity === 'invoices') {
+          if (!errors.issueDate && !errors.dueDate && data.issueDate > data.dueDate) errors.dueDate = 'El vencimiento debe ser posterior a la emisión';
+        }
+        if (Object.keys(errors).length) throw { errors };
+      }
+
+      create(entity, data) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        if (entity === 'services' && !['admin', 'manager'].includes(user.role)) throw new Error('Sin permiso');
+        if (entity === 'clients' && !this.hasPermission('clients')) throw new Error('Sin permiso');
+        if (entity === 'employees' && !this.hasPermission('employees')) throw new Error('Sin permiso');
+        if (entity === 'incidents' && !this.hasPermission('incidents')) throw new Error('Sin permiso');
+        if (entity === 'invoices' && !this.hasPermission('billing')) throw new Error('Sin permiso');
+        if (entity === 'quotes' && !this.hasPermission('billing')) throw new Error('Sin permiso');
+
+        this.validate(entity, data, null);
+        const record = Object.assign({ id: entity[0] + Date.now().toString(36) }, data);
+
+        if (entity === 'services') {
+          if (!record.status) record.status = 'programado';
+          if (!record.tasks) record.tasks = [];
+          record.checkin = null; record.checkout = null; record.evidence = []; record.signature = null;
+        }
+        if (entity === 'incidents') {
+          record.status = 'abierta';
+          record.createdAt = new Date().toISOString();
+          record.createdBy = user.name + ' (' + ROLE_LABELS[user.role] + ')';
+          record.slaDeadline = new Date(Date.now() + INCIDENT_PRI[record.priority][1] * 3600000).toISOString();
+          record.timeline = [{ at: record.createdAt, by: user.name, action: 'Incidencia creada' }];
+          record.comments = [];
+        }
+        if (entity === 'invoices') {
+          const maxNum = this.db.invoices.reduce((max, inv) => {
+            const m = inv.number.match(/(\d+)$/); return m ? Math.max(max, Number(m[1])) : max;
+          }, 0);
+          record.number = new Date().getFullYear() + '-' + String(maxNum + 1).padStart(4, '0');
+          record.status = 'borrador';
+          record.timeline = [{ at: new Date().toISOString(), action: 'Factura creada como borrador' }];
+          this.recalcInvoice(record);
+        }
+        if (entity === 'quotes') {
+          record.number = 'P-' + new Date().getFullYear() + '-' + String(this.db.quotes.length + 1).padStart(4, '0');
+          record.status = 'borrador';
+          record.createdAt = new Date().toISOString();
+          record.timeline = [{ at: record.createdAt, action: 'Presupuesto creado' }];
+          this.recalcQuote(record);
+        }
+
+        this.db[entity].push(record);
+        this.save();
+        return record;
+      }
+
+      update(entity, id, data) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        const idx = this.db[entity].findIndex(r => r.id === id);
+        if (idx === -1) throw new Error('Registro no encontrado');
+        const existing = this.db[entity][idx];
+
+        if (entity === 'services') {
+          const canAdmin = ['admin', 'manager'].includes(user.role);
+          const isOwnStaff = user.role === 'staff' && existing.employeeId === user.employeeId;
+          if (!canAdmin && !isOwnStaff) throw new Error('Sin permiso');
+        } else if (!this.hasPermission(entity === 'invoices' || entity === 'quotes' ? 'billing' : entity)) {
+          throw new Error('Sin permiso');
+        }
+
+        const merged = Object.assign({}, existing, data);
+        this.validate(entity, merged, id);
+        if (entity === 'invoices') this.recalcInvoice(merged);
+        if (entity === 'quotes') this.recalcQuote(merged);
+        this.db[entity][idx] = merged;
+        this.save();
+        return merged;
+      }
+
+      recalcInvoice(inv) {
+        const items = inv.items || [];
+        inv.subtotal = items.reduce((s, i) => s + (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0), 0);
+        inv.tax = items.reduce((s, i) => {
+          const line = (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0);
+          const rate = Number(i.tax) || 0;
+          return s + line * (rate / 100);
+        }, 0);
+        inv.total = inv.subtotal + inv.tax;
+      }
+
+      recalcQuote(q) {
+        const items = q.items || [];
+        q.subtotal = items.reduce((s, i) => s + (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0), 0);
+        q.tax = items.reduce((s, i) => {
+          const line = (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0);
+          const rate = Number(i.tax) || 0;
+          return s + line * (rate / 100);
+        }, 0);
+        q.total = q.subtotal + q.tax;
+      }
+
+      // Services - Phase 2 field updates
+      updateServiceField(id, patch) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        const idx = this.db.services.findIndex(s => s.id === id);
+        if (idx === -1) throw new Error('Servicio no encontrado');
+        const svc = this.db.services[idx];
+        const canAdmin = ['admin', 'manager'].includes(user.role);
+        const isOwnStaff = user.role === 'staff' && svc.employeeId === user.employeeId;
+        const isOwnClient = user.role === 'client' && svc.clientId === user.clientId;
+        if (!canAdmin && !isOwnStaff && !isOwnClient) throw new Error('Sin permiso');
+
+        // Clients can only change status to certain values
+        if (user.role === 'client' && patch.status) {
+          const allowed = ['validado', 'cancelado'];
+          if (!allowed.includes(patch.status)) throw new Error('El cliente solo puede validar o cancelar');
+        }
+
+        this.db.services[idx] = Object.assign({}, svc, patch);
+        this.save();
+        return this.db.services[idx];
+      }
+
+      rescheduleService(id, newDate, newTime, reason) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        const idx = this.db.services.findIndex(s => s.id === id);
+        if (idx === -1) throw new Error('Servicio no encontrado');
+        const svc = this.db.services[idx];
+
+        // Check permission
+        const canAdmin = ['admin', 'manager'].includes(user.role);
+        const isOwnClient = user.role === 'client' && svc.clientId === user.clientId;
+        if (!canAdmin && !isOwnClient) throw new Error('Sin permiso');
+
+        // Validate new slot
+        const conflict = this.db.services.find(s => s.employeeId === svc.employeeId && s.date === newDate && s.time === newTime && s.id !== id && s.status !== 'cancelado');
+        if (conflict) throw new Error('Ese horario ya está ocupado por otro servicio');
+
+        const today = localISO(new Date());
+        if (newDate < today) throw new Error('No se puede reprogramar a fecha pasada');
+
+        const prev = svc.date + ' ' + svc.time;
+        this.db.services[idx] = Object.assign({}, svc, { date: newDate, time: newTime });
+        this.db.messages.push({
+          id: 'm' + Date.now().toString(36), serviceId: id,
+          fromId: user.userId, fromName: user.name, fromRole: ROLE_LABELS[user.role],
+          text: '📅 Servicio reprogramado: de ' + prev + ' a ' + newDate + ' ' + newTime + (reason ? ' · Motivo: ' + reason : ''),
+          date: new Date().toISOString(), attachments: []
+        });
+        this.save();
+        return this.db.services[idx];
+      }
+
+      checkInService(id, coords) { return this.updateServiceField(id, { checkin: { at: new Date().toISOString(), coords }, status: 'en_camino' }); }
+      checkoutService(id, coords) {
+        const svc = this.get('services', id);
+        if (!svc || !svc.checkin) throw new Error('Debes hacer check-in primero');
+        return this.updateServiceField(id, { checkout: { at: new Date().toISOString(), coords }, status: (svc.evidence && svc.evidence.length ? 'finalizado' : 'iniciado') });
+      }
+      startService(id) { return this.updateServiceField(id, { status: 'iniciado' }); }
+      finalizeService(id) {
+        const svc = this.get('services', id); if (!svc) throw new Error('No encontrado');
+        return this.updateServiceField(id, { status: 'finalizado', checkout: svc.checkout || { at: new Date().toISOString(), coords: null } });
+      }
+      validateService(id) {
+        const svc = this.get('services', id);
+        if (!svc || svc.status !== 'finalizado') throw new Error('Debe estar finalizado');
+        return this.updateServiceField(id, { status: 'validado', signature: svc.signature || { by: this.getUser().name, at: new Date().toISOString() } });
+      }
+
+      toggleTask(serviceId, taskId) {
+        const svc = this.get('services', serviceId); if (!svc) throw new Error('No encontrado');
+        const tasks = (svc.tasks || []).map(t => t.id === taskId ? Object.assign({}, t, { done: !t.done }) : t);
+        return this.updateServiceField(serviceId, { tasks });
+      }
+      addTask(serviceId, name) {
+        const svc = this.get('services', serviceId); if (!svc) throw new Error('No encontrado');
+        const tasks = (svc.tasks || []).slice();
+        tasks.push({ id: 't' + Date.now().toString(36), name, done: false });
+        return this.updateServiceField(serviceId, { tasks });
+      }
+      removeTask(serviceId, taskId) {
+        const svc = this.get('services', serviceId); if (!svc) throw new Error('No encontrado');
+        return this.updateServiceField(serviceId, { tasks: (svc.tasks || []).filter(t => t.id !== taskId) });
+      }
+      addEvidence(serviceId, dataUrl) {
+        const svc = this.get('services', serviceId); if (!svc) throw new Error('No encontrado');
+        const evidence = (svc.evidence || []).slice();
+        evidence.push({ id: 'ev' + Date.now().toString(36), data: dataUrl, at: new Date().toISOString() });
+        return this.updateServiceField(serviceId, { evidence });
+      }
+      removeEvidence(serviceId, evId) {
+        const svc = this.get('services', serviceId); if (!svc) throw new Error('No encontrado');
+        return this.updateServiceField(serviceId, { evidence: (svc.evidence || []).filter(e => e.id !== evId) });
+      }
+      saveSignature(serviceId, dataUrl) {
+        const svc = this.get('services', serviceId); if (!svc) throw new Error('No encontrado');
+        return this.updateServiceField(serviceId, { signature: { data: dataUrl, by: this.getUser().name, at: new Date().toISOString() } });
+      }
+
+      sendMessage(serviceId, text, attachment) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        const msg = {
+          id: 'm' + Date.now().toString(36), serviceId,
+          fromId: user.userId, fromName: user.name, fromRole: ROLE_LABELS[user.role] || user.role,
+          text: String(text || '').trim(), date: new Date().toISOString(),
+          attachments: attachment ? [attachment] : []
+        };
+        if (!msg.text && msg.attachments.length === 0) throw new Error('Escribe un mensaje o adjunta');
+        this.db.messages.push(msg);
+        this.save();
+        return msg;
+      }
+      messagesOf(serviceId) { return this.db.messages.filter(m => m.serviceId === serviceId).sort((a, b) => a.date.localeCompare(b.date)); }
+
+      visibleIncidents() {
+        const ids = new Set(this.visibleServices().map(s => s.id));
+        return this.db.incidents.filter(i => ids.has(i.serviceId));
+      }
+
+      updateIncidentStatus(id, newStatus, responsibleId) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        const idx = this.db.incidents.findIndex(i => i.id === id);
+        if (idx === -1) throw new Error('No encontrada');
+        const inc = this.db.incidents[idx];
+        const timeline = (inc.timeline || []).slice();
+        const now = new Date().toISOString();
+        timeline.push({ at: now, by: user.name, action: 'Estado → ' + INCIDENT_STATUS[newStatus][0] });
+        if (responsibleId !== undefined && responsibleId !== inc.responsibleId) {
+          const emp = this.getEmployee(responsibleId);
+          timeline.push({ at: now, by: user.name, action: 'Responsable: ' + (emp ? emp.name : '—') });
+        }
+        this.db.incidents[idx] = Object.assign({}, inc, {
+          status: newStatus,
+          responsibleId: responsibleId !== undefined ? responsibleId : inc.responsibleId,
+          timeline
+        });
+        this.save();
+        return this.db.incidents[idx];
+      }
+
+      addIncidentComment(incidentId, text) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        const idx = this.db.incidents.findIndex(i => i.id === incidentId);
+        if (idx === -1) throw new Error('No encontrada');
+        if (!text || text.trim().length < 2) throw new Error('Comentario demasiado corto');
+        const inc = this.db.incidents[idx];
+        const comment = { id: 'c' + Date.now().toString(36), fromId: user.userId, fromName: user.name, fromRole: ROLE_LABELS[user.role], text: text.trim(), date: new Date().toISOString() };
+        inc.comments = (inc.comments || []).concat([comment]);
+        inc.timeline = (inc.timeline || []).concat([{ at: comment.date, by: user.name, action: 'Comentario añadido' }]);
+        this.db.incidents[idx] = inc;
+        this.save();
+        return comment;
+      }
+
+      // Invoices
+      updateInvoiceStatus(id, newStatus, paidAt) {
+        if (!this.hasPermission('billing')) throw new Error('Sin permiso');
+        const idx = this.db.invoices.findIndex(i => i.id === id);
+        if (idx === -1) throw new Error('No encontrada');
+        const inv = this.db.invoices[idx];
+        const timeline = (inv.timeline || []).slice();
+        timeline.push({ at: new Date().toISOString(), action: 'Estado → ' + INVOICE_STATUS[newStatus][0] });
+        const patch = { status: newStatus, timeline };
+        if (newStatus === 'pagada') patch.paidAt = paidAt || new Date().toISOString();
+        this.db.invoices[idx] = Object.assign({}, inv, patch);
+        this.save();
+        return this.db.invoices[idx];
+      }
+
+      invoiceFromService(serviceId) {
+        if (!this.hasPermission('billing')) throw new Error('Sin permiso');
+        const svc = this.get('services', serviceId);
+        if (!svc) throw new Error('Servicio no encontrado');
+        if (svc.status !== 'validado' && svc.status !== 'finalizado') throw new Error('El servicio debe estar finalizado/validado');
+        const co = this.getCompany();
+        return this.create('invoices', {
+          clientId: svc.clientId,
+          serviceIds: [serviceId],
+          issueDate: localISO(new Date()),
+          dueDate: addDaysISO(30),
+          items: [{ description: svc.title + ' (' + svc.date + ')', quantity: 1, unitPrice: Number(svc.price) || 0, tax: co.taxRate }],
+          notes: ''
+        });
+      }
+
+      deleteClient(id) {
+        if (!this.hasPermission('clients')) throw new Error('Sin permiso');
+        const svcIds = this.db.services.filter(s => s.clientId === id).map(s => s.id);
+        this.db.services = this.db.services.filter(s => s.clientId !== id);
+        this.db.incidents = this.db.incidents.filter(i => !svcIds.includes(i.serviceId));
+        this.db.messages = this.db.messages.filter(m => !svcIds.includes(m.serviceId));
+        this.db.clients = this.db.clients.filter(c => c.id !== id);
+        this.db.users = this.db.users.filter(u => u.clientId !== id);
+        this.save();
+      }
+
+      deleteEmployee(id) {
+        if (!this.hasPermission('employees')) throw new Error('Sin permiso');
+        this.db.services.forEach(s => { if (s.employeeId === id) s.employeeId = ''; });
+        this.db.employees = this.db.employees.filter(e => e.id !== id);
+        this.save();
+      }
+
+      deleteService(id) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const user = this.getUser();
+        if (!['admin', 'manager'].includes(user.role)) throw new Error('Sin permiso');
+        this.db.incidents = this.db.incidents.filter(i => i.serviceId !== id);
+        this.db.messages = this.db.messages.filter(m => m.serviceId !== id);
+        this.db.invoices.forEach(inv => { inv.serviceIds = (inv.serviceIds || []).filter(x => x !== id); });
+        this.db.services = this.db.services.filter(s => s.id !== id);
+        this.save();
+      }
+
+      list(entity) {
+        if (!this.isAuthenticated()) throw new Error('No autenticado');
+        const permKey = (entity === 'invoices' || entity === 'quotes') ? 'billing' : entity;
+        if (!this.hasPermission(permKey)) throw new Error('Sin permiso');
+        return this.db[entity].slice();
+      }
+
+      get(entity, id) {
+        const arr = this.db[entity] || [];
+        return arr.find(r => r.id === id);
+      }
+
+      slaInfo(inc) {
+        if (!inc) return null;
+        const now = Date.now();
+        const deadline = new Date(inc.slaDeadline).getTime();
+        const hoursLeft = (deadline - now) / 3600000;
+        const status = inc.status;
+        if (status === 'resuelta' || status === 'cerrada') return { label: 'Cumplida', kind: 'ok', hoursLeft: Infinity };
+        if (hoursLeft < 0) return { label: 'SLA vencido', kind: 'late', hoursLeft };
+        if (hoursLeft < INCIDENT_PRI[inc.priority][1] * 0.25) return { label: 'Riesgo de SLA', kind: 'warn', hoursLeft };
+        return { label: 'En plazo', kind: 'ok', hoursLeft };
+      }
+
+      // --- Reports ---
+      reportStats(rangeFrom, rangeTo) {
+        const from = new Date(rangeFrom + 'T00:00:00');
+        const to = new Date(rangeTo + 'T23:59:59');
+        const inRange = s => { const d = new Date(s.date + 'T00:00:00'); return d >= from && d <= to; };
+
+        const svcsInRange = this.db.services.filter(inRange);
+        const completed = svcsInRange.filter(s => s.status === 'validado' || s.status === 'finalizado');
+        const canceled = svcsInRange.filter(s => s.status === 'cancelado');
+
+        const revenue = completed.reduce((s, svc) => s + (Number(svc.price) || 0), 0);
+
+        // By employee
+        const byEmployee = {};
+        this.db.employees.forEach(e => { byEmployee[e.id] = { name: e.name, count: 0, revenue: 0 }; });
+        completed.forEach(s => {
+          if (byEmployee[s.employeeId]) {
+            byEmployee[s.employeeId].count++;
+            byEmployee[s.employeeId].revenue += Number(s.price) || 0;
+          }
+        });
+
+        // By client
+        const byClient = {};
+        this.db.clients.forEach(c => { byClient[c.id] = { name: c.name, count: 0, revenue: 0 }; });
+        completed.forEach(s => {
+          if (byClient[s.clientId]) {
+            byClient[s.clientId].count++;
+            byClient[s.clientId].revenue += Number(s.price) || 0;
+          }
+        });
+
+        // Incidents in range
+        const incidentsInRange = this.db.incidents.filter(i => {
+          const d = new Date(i.createdAt); return d >= from && d <= to;
+        });
+
+        // Invoices
+        const invoicesInRange = this.db.invoices.filter(i => {
+          const d = new Date(i.issueDate); return d >= from && d <= to;
+        });
+        const invoicedTotal = invoicesInRange.reduce((s, i) => s + (Number(i.total) || 0), 0);
+        const paidTotal = invoicesInRange.filter(i => i.status === 'pagada').reduce((s, i) => s + (Number(i.total) || 0), 0);
+        const outstandingTotal = invoicesInRange.filter(i => i.status === 'enviada' || i.status === 'vencida').reduce((s, i) => s + (Number(i.total) || 0), 0);
+
+        const avgRating = 4.8; // mock
+
+        return {
+          totalServices: svcsInRange.length,
+          completed: completed.length,
+          canceled: canceled.length,
+          completionRate: svcsInRange.length ? (completed.length / svcsInRange.length) * 100 : 0,
+          revenue,
+          invoicedTotal,
+          paidTotal,
+          outstandingTotal,
+          incidents: incidentsInRange.length,
+          avgRating,
+          byEmployee: Object.values(byEmployee).filter(x => x.count > 0),
+          byClient: Object.values(byClient).filter(x => x.count > 0)
+        };
+      }
+
+      // --- Routes: nearest-neighbor heuristic ---
+      computeRoute(dateStr) {
+        const services = this.db.services.filter(s => s.date === dateStr && s.status !== 'cancelado').sort((a, b) => String(a.time).localeCompare(String(b.time)));
+        if (!services.length) return [];
+
+        const withCoords = services.filter(s => s.coords);
+        const withoutCoords = services.filter(s => !s.coords);
+
+        const haversine = (a, b) => {
+          const R = 6371;
+          const toRad = x => x * Math.PI / 180;
+          const dLat = toRad(b.lat - a.lat);
+          const dLng = toRad(b.lng - a.lng);
+          const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+          return 2 * R * Math.asin(Math.sqrt(h));
+        };
+
+        // Group by employee
+        const groups = {};
+        services.forEach(s => {
+          if (!groups[s.employeeId]) groups[s.employeeId] = [];
+          groups[s.employeeId].push(s);
+        });
+
+        const routes = [];
+        Object.entries(groups).forEach(([empId, list]) => {
+          // Sort by time, then greedy nearest neighbor within same time window
+          list.sort((a, b) => String(a.time).localeCompare(String(b.time)));
+          const ordered = [];
+          const remaining = list.slice();
+
+          let current = remaining.shift();
+          if (current) ordered.push(current);
+
+          while (remaining.length) {
+            if (!current || !current.coords) {
+              ordered.push(remaining.shift());
+              current = ordered[ordered.length - 1];
+              continue;
+            }
+            let best = null, bestIdx = -1, bestDist = Infinity;
+            remaining.forEach((s, idx) => {
+              if (!s.coords) return;
+              const d = haversine(current.coords, s.coords);
+              if (d < bestDist) { bestDist = d; best = s; bestIdx = idx; }
+            });
+            if (bestIdx >= 0) {
+              ordered.push(best);
+              remaining.splice(bestIdx, 1);
+              current = best;
+            } else {
+              ordered.push(remaining.shift());
+              current = ordered[ordered.length - 1];
+            }
+          }
+
+          let totalKm = 0;
+          for (let i = 1; i < ordered.length; i++) {
+            if (ordered[i - 1].coords && ordered[i].coords) {
+              totalKm += haversine(ordered[i - 1].coords, ordered[i].coords);
+            }
+          }
+
+          routes.push({
+            employeeId: empId,
+            employee: this.getEmployee(empId),
+            services: ordered,
+            totalKm: Math.round(totalKm * 10) / 10
+          });
+        });
+
+        return routes;
+      }
+    }
+
+    const api = new BackendAPI();
+
+    let ui = {
+      section: 'calendar',
+      calYear: new Date().getFullYear(),
+      calMonth: new Date().getMonth(),
+      serviceTab: 'resumen',
+      currentServiceId: null,
+      signaturePad: null,
+      signatureDrawing: false,
+      signatureEmpty: true,
+      reportFrom: localISO(new Date(new Date().getFullYear(), new Date().getMonth(), 1)),
+      reportTo: localISO(new Date()),
+      routeDate: localISO(new Date())
+    };
+
+    const $ = s => document.querySelector(s);
+    function esc(s) {
+      return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function toast(msg, type) {
+      const t = $('#toast'); t.textContent = msg; t.className = 'show' + (type ? ' ' + type : '');
+      clearTimeout(t._h); t._h = setTimeout(() => t.className = '', 2800);
+    }
+    function notify(message, kind) {
+      const c = $('#notifs');
+      const el = document.createElement('div');
+      el.className = 'notif ' + (kind || '');
+      el.innerHTML = '<div>' + esc(message) + '</div><small>' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + '</small>';
+      c.appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; el.style.transition = '.3s'; setTimeout(() => el.remove(), 300); }, 4500);
+      if (window.Notification && Notification.permission === 'granted') try { new Notification('CleanOps', { body: message }); } catch (e) {}
+    }
+    function ensureSection() {
+      if (!api.isAuthenticated()) return;
+      const perms = PERMISSIONS[api.getUser().role] || [];
+      if (!perms.includes(ui.section)) ui.section = perms[0] || 'calendar';
+    }
+    function canCreateService() { const u = api.getUser(); return !!u && ['admin', 'manager'].includes(u.role); }
+    function canEditService(svc) {
+      const u = api.getUser(); if (!u || !svc) return false;
+      if (['admin', 'manager'].includes(u.role)) return true;
+      if (u.role === 'staff') return svc.employeeId === u.employeeId;
+      if (u.role === 'client') return svc.clientId === u.clientId;
+      return false;
+    }
+    function emptyState(icon, title, desc, actionHTML) {
+      return '<div class="empty-state"><div class="empty-icon">' + icon + '</div><div class="empty-title">' + title + '</div><div class="empty-desc">' + desc + '</div>' + (actionHTML ? '<div style="margin-top:16px">' + actionHTML + '</div>' : '') + '</div>';
+    }
+    function clearFormErrors(form) {
+      form.querySelectorAll('.field').forEach(f => { f.classList.remove('has-error'); const m = f.querySelector('.error-msg'); if (m) m.textContent = ''; });
+      form.querySelectorAll('.invalid').forEach(e => e.classList.remove('invalid'));
+      form.querySelectorAll('[aria-invalid]').forEach(e => e.removeAttribute('aria-invalid'));
+    }
+    function setFieldError(form, fieldName, message) {
+      const input = form.querySelector('[name="' + fieldName + '"]'); if (!input) return;
+      const field = input.closest('.field'); if (!field) return;
+      field.classList.add('has-error'); input.classList.add('invalid'); input.setAttribute('aria-invalid', 'true');
+      const m = field.querySelector('.error-msg'); if (m) m.textContent = message;
+    }
+    function collectForm(form) { const d = {}; new FormData(form).forEach((v, k) => { d[k] = v; }); return d; }
+
+    function validateEntityForm(entity, data, id, form) {
+      let ok = true;
+      if (entity === 'clients') {
+        if (!data.name || data.name.trim().length < 2) { setFieldError(form, 'name', 'Nombre inválido'); ok = false; }
+        if (!data.phone || !isValidPhone(data.phone)) { setFieldError(form, 'phone', 'Teléfono inválido'); ok = false; }
+        if (!data.address || data.address.trim().length < 5) { setFieldError(form, 'address', 'Dirección inválida'); ok = false; }
+        if (data.email && data.email.trim() && !isValidEmail(data.email)) { setFieldError(form, 'email', 'Email inválido'); ok = false; }
+      }
+      if (entity === 'employees') {
+        if (!data.name || data.name.trim().length < 2) { setFieldError(form, 'name', 'Nombre inválido'); ok = false; }
+        if (!data.phone || !isValidPhone(data.phone)) { setFieldError(form, 'phone', 'Teléfono inválido'); ok = false; }
+        if (!data.zone || data.zone.trim().length < 2) { setFieldError(form, 'zone', 'Zona inválida'); ok = false; }
+      }
+      if (entity === 'services') {
+        if (!data.title || data.title.trim().length < 3) { setFieldError(form, 'title', 'Mínimo 3 caracteres'); ok = false; }
+        if (!data.clientId) { setFieldError(form, 'clientId', 'Selecciona cliente'); ok = false; }
+        if (!data.employeeId) { setFieldError(form, 'employeeId', 'Selecciona empleado'); ok = false; }
+        if (!data.date) { setFieldError(form, 'date', 'Selecciona fecha'); ok = false; }
+        if (!data.time) { setFieldError(form, 'time', 'Selecciona hora'); ok = false; }
+        if (String(data.price || '').trim() !== '') {
+          const p = Number(data.price); if (isNaN(p) || p < 0) { setFieldError(form, 'price', 'Inválido'); ok = false; }
+        }
+      }
+      if (entity === 'incidents') {
+        if (!data.serviceId) { setFieldError(form, 'serviceId', 'Selecciona servicio'); ok = false; }
+        if (!data.type) { setFieldError(form, 'type', 'Selecciona tipo'); ok = false; }
+        if (!data.description || data.description.trim().length < 10) { setFieldError(form, 'description', 'Mínimo 10 caracteres'); ok = false; }
+      }
+      if (entity === 'invoices') {
+        if (!data.clientId) { setFieldError(form, 'clientId', 'Selecciona cliente'); ok = false; }
+        if (!data.issueDate) { setFieldError(form, 'issueDate', 'Fecha de emisión'); ok = false; }
+        if (!data.dueDate) { setFieldError(form, 'dueDate', 'Fecha de vencimiento'); ok = false; }
+      }
+      if (entity === 'quotes') {
+        if (!data.clientId) { setFieldError(form, 'clientId', 'Selecciona cliente'); ok = false; }
+      }
+      if (entity === 'reschedule') {
+        if (!data.date) { setFieldError(form, 'date', 'Selecciona nueva fecha'); ok = false; }
+        if (!data.time) { setFieldError(form, 'time', 'Selecciona nueva hora'); ok = false; }
+      }
+      return ok;
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const form = e.currentTarget; clearFormErrors(form);
+      const alertBox = $('#login-alert'); if (alertBox) { alertBox.style.display = 'none'; alertBox.textContent = ''; }
+      const data = collectForm(form); let ok = true;
+      if (!data.email) { setFieldError(form, 'email', 'Obligatorio'); ok = false; }
+      else if (!isValidEmail(data.email)) { setFieldError(form, 'email', 'Email inválido'); ok = false; }
+      if (!data.password) { setFieldError(form, 'password', 'Obligatorio'); ok = false; }
+      else if (data.password.length < 6) { setFieldError(form, 'password', 'Mínimo 6 caracteres'); ok = false; }
+      if (!ok) return;
+      try {
+        api.login(data.email, data.password);
+        ensureSection(); render();
+        toast('Bienvenido, ' + api.getUser().name, 'ok');
+        if (window.Notification && Notification.permission === 'default') try { Notification.requestPermission(); } catch (e) {}
+      } catch (err) {
+        const msg = err && err.message ? err.message : 'Credenciales incorrectas';
+        if (alertBox) { alertBox.textContent = msg; alertBox.style.display = 'block'; }
+        setFieldError(form, 'email', ' '); setFieldError(form, 'password', ' '); toast(msg, 'err');
+      }
+    }
+
+    function handleEntityFormSubmit(e) {
+      e.preventDefault();
+      const form = e.currentTarget; const entity = form.dataset.form; const id = form.dataset.id || null;
+      if (!entity) return;
+      clearFormErrors(form);
+      const data = collectForm(form);
+      if (!validateEntityForm(entity, data, id, form)) { toast('Revisa los campos', 'err'); return; }
+
+      try {
+        if (entity === 'services') {
+          data.price = Number(data.price || 0);
+          if (!id && !data.status) data.status = 'programado';
+          if (data.tasksText !== undefined) {
+            data.tasks = String(data.tasksText || '').split('\n').map(x => x.trim()).filter(Boolean).map(n => ({ id: 't' + Math.random().toString(36).slice(2, 8), name: n, done: false }));
+            delete data.tasksText;
+          }
+        }
+        if (entity === 'invoices' || entity === 'quotes') {
+          // Items parsed separately
+          const rawItems = form.dataset.items || '[]';
+          data.items = JSON.parse(rawItems);
+          if (!data.items.length) { toast('Añade al menos una línea', 'err'); return; }
+        }
+        if (id) api.update(entity, id, data); else api.create(entity, data);
+        closeModal(); render(); toast('Guardado', 'ok');
+      } catch (err) {
+        if (err && err.errors) {
+          Object.keys(err.errors).forEach(f => setFieldError(form, f, err.errors[f]));
+          toast(err.errors[Object.keys(err.errors)[0]] || 'Error', 'err');
+        } else toast(err && err.message ? err.message : 'Error', 'err');
+      }
+    }
+
+    function openModal(html, afterRender) {
+      $('#modal-content').innerHTML = html;
+      const form = $('#modal-content form'); if (form) form.addEventListener('submit', handleEntityFormSubmit);
+      $('#modal-overlay').classList.add('open');
+      if (typeof afterRender === 'function') setTimeout(afterRender, 20);
+      const first = $('#modal-content').querySelector('input:not([type=hidden]):not([type=file]), select, textarea');
+      if (first) setTimeout(() => first.focus(), 50);
+    }
+    function closeModal() { $('#modal-overlay').classList.remove('open'); $('#modal-content').innerHTML = ''; ui.signaturePad = null; ui.signatureDrawing = false; ui.signatureEmpty = true; }
+
+    /* ===== RENDER: LOGIN / SIDEBAR / HEADER ===== */
+    function renderLogin() {
+      $('#sidebar').innerHTML = '<div class="brand">🧹 <span>CleanOps</span></div><div style="padding:16px;color:#94a3b8;font-size:13px;line-height:1.7">Plataforma integral. Fase 3: facturación, reportes, rutas e integraciones.</div><div style="padding:16px;margin-top:auto"><button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" data-action="reset-demo">↺ Restablecer demo</button></div>';
+      $('#auth-area').innerHTML = '';
+      $('#page-title').textContent = 'Iniciar sesión';
+      $('#content').innerHTML = '<div style="max-width:440px;margin:40px auto"><div class="card"><h2 style="margin:0 0 20px;text-align:center">🔐 Acceso a CleanOps</h2><div id="login-alert" class="form-alert" style="display:none"></div><form id="login-form" novalidate><div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required><span class="error-msg"></span></div><div class="field"><label>Contraseña</label><input name="password" type="password" autocomplete="current-password" required><span class="error-msg"></span></div><button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" type="submit">Entrar</button></form><div class="demo-box"><b>Cuentas</b><br>Admin: admin@cleanops.com / admin123<br>Gerencia: gerente@cleanops.com / manager123<br>Personal: maria@cleanops.com / staff123<br>Cliente: cliente@sonrisa.com / client123</div></div></div>';
+      const f = $('#login-form'); if (f) f.addEventListener('submit', handleLoginSubmit);
+      const ei = $('#login-form input[name=email]'); if (ei) ei.focus();
+    }
+
+    function renderSidebar() {
+      const user = api.getUser();
+      const perms = PERMISSIONS[user.role] || [];
+      const openIncidents = api.visibleIncidents().filter(i => i.status === 'abierta' || i.status === 'en_proceso').length;
+
+      const items = [];
+      if (perms.includes('portal')) items.push({ id: 'portal', icon: '🏠', label: 'Mi portal' });
+      if (perms.includes('calendar')) items.push({ id: 'calendar', icon: '📅', label: 'Calendario' });
+      if (perms.includes('services')) items.push({ id: 'services', icon: '📋', label: 'Servicios' });
+      if (perms.includes('routes')) items.push({ id: 'routes', icon: '🗺️', label: 'Rutas del día' });
+      if (perms.includes('incidents')) items.push({ id: 'incidents', icon: '⚠️', label: 'Incidencias', badge: openIncidents });
+      if (perms.includes('chat')) items.push({ id: 'chat', icon: '💬', label: 'Chat' });
+      if (perms.includes('billing')) items.push({ id: 'billing', icon: '💶', label: 'Facturación' });
+      if (perms.includes('reports')) items.push({ id: 'reports', icon: '📊', label: 'Reportes' });
+      if (perms.includes('clients')) items.push({ id: 'clients', icon: '🏢', label: 'Clientes' });
+      if (perms.includes('employees')) items.push({ id: 'employees', icon: '👥', label: 'Personal' });
+
+      $('#sidebar').innerHTML = '<div class="brand">🧹 <span>CleanOps</span></div><nav aria-label="Secciones">' +
+        items.map(i => '<button class="nav-btn ' + (ui.section === i.id ? 'active' : '') + '" data-action="nav" data-section="' + i.id + '">' + i.icon + ' ' + i.label + (i.badge ? '<span class="badge-count">' + i.badge + '</span>' : '') + '</button>').join('') +
+        '</nav><div class="side-foot"><div style="font-weight:700;color:#fff;margin-bottom:4px">' + esc(user.name) + '</div><div style="margin-bottom:10px">' + ROLE_LABELS[user.role] + '</div><button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" data-action="reset-demo">↺ Restablecer demo</button></div>';
+    }
+
+    function renderHeader() {
+      const user = api.getUser();
+      $('#auth-area').innerHTML = '<span class="user-chip">👤 ' + esc(user.name) + ' · ' + ROLE_LABELS[user.role] + '</span><button class="btn btn-ghost btn-sm" data-action="logout">Cerrar sesión</button>';
+    }
+
+    /* ===== CALENDAR ===== */
+    function renderCalendar() {
+      const y = ui.calYear, m = ui.calMonth;
+      const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const dayNames = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+      const todayStr = localISO(new Date());
+      const monthPrefix = y + '-' + String(m + 1).padStart(2, '0');
+      let services = []; try { services = api.visibleServices(); } catch (e) {}
+      const firstDay = new Date(y, m, 1); const startPad = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(y, m + 1, 0).getDate(); const prevLastDay = new Date(y, m, 0).getDate();
+      const canCreate = canCreateService();
+
+      const cells = [];
+      for (let i = startPad - 1; i >= 0; i--) cells.push({ other: true, day: prevLastDay - i, date: '', services: [] });
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        const dayServices = services.filter(s => s.date === dateStr).sort((a, b) => String(a.time).localeCompare(String(b.time)));
+        cells.push({ other: false, day: d, date: dateStr, isToday: dateStr === todayStr, services: dayServices });
+      }
+      for (let d = 1; cells.length < 42; d++) cells.push({ other: true, day: d, date: '', services: [] });
+
+      const cellHTML = cells.map(c => {
+        const classes = ['cal-cell']; if (c.other) classes.push('other'); if (c.isToday) classes.push('today');
+        const dayNumber = c.other ? '' : '<span class="cal-num">' + c.day + '</span>';
+        const eventsHTML = (c.services || []).map(s => {
+          const st = STATUS_MAP[s.status] || STATUS_MAP.programado;
+          const canceled = s.status === 'cancelado' ? ' canceled' : '';
+          return '<button type="button" class="cal-event' + canceled + '" style="background:' + st[1] + ';color:' + st[2] + '" data-action="view-service" data-id="' + s.id + '">' + esc(s.time) + ' · ' + esc(s.title) + '</button>';
+        }).join('');
+        const addBtn = (!c.other && canCreate) ? '<button type="button" class="cal-add" data-action="new-service-date" data-date="' + c.date + '">＋</button>' : '';
+        return '<div class="' + classes.join(' ') + '">' + dayNumber + '<div class="cal-events">' + eventsHTML + '</div>' + addBtn + '</div>';
+      }).join('');
+
+      return '<div class="card"><div class="cal-header"><button class="btn btn-ghost btn-sm" data-action="cal-prev">◀</button><h2 style="margin:0;font-size:18px">' + monthNames[m] + ' ' + y + '</h2><button class="btn btn-ghost btn-sm" data-action="cal-next">▶</button></div><div class="cal-grid">' + dayNames.map(d => '<div class="cal-day-name">' + d + '</div>').join('') + cellHTML + '</div></div>' + (canCreate ? '<div style="text-align:right"><button class="btn btn-primary" data-action="new-service">＋ Nuevo servicio</button></div>' : '');
+    }
+
+    /* ===== SERVICES LIST ===== */
+    function renderServices() {
+      let services = []; try { services = api.visibleServices().sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)); } catch (e) {}
+      const canCreate = canCreateService();
+      if (!services.length) return emptyState('📋', 'No hay servicios visibles', canCreate ? 'Crea uno desde el calendario.' : 'No tienes servicios asignados.', canCreate ? '<button class="btn btn-primary" data-action="new-service">＋ Crear servicio</button>' : '');
+      return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap"><span style="color:var(--muted);font-weight:600">' + services.length + ' servicio' + (services.length !== 1 ? 's' : '') + '</span>' + (canCreate ? '<button class="btn btn-primary" data-action="new-service">＋ Nuevo servicio</button>' : '') + '</div><div style="display:flex;flex-direction:column;gap:10px">' +
+        services.map(s => {
+          const client = api.getClient(s.clientId);
+          const employee = api.getEmployee(s.employeeId);
+          const st = STATUS_MAP[s.status] || STATUS_MAP.programado;
+          const taskDone = (s.tasks || []).filter(t => t.done).length;
+          const taskTotal = (s.tasks || []).length;
+          return '<div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:0"><div style="flex:1;min-width:220px"><div style="font-weight:700;font-size:15px">' + esc(s.title) + '</div><div style="color:var(--muted);font-size:13px;margin-top:3px">📅 ' + esc(s.date) + ' · 🕐 ' + esc(s.time) + ' · 🏢 ' + esc(client ? client.name : '—') + ' · 👤 ' + esc(employee ? employee.name : 'Sin asignar') + '</div><div style="color:var(--muted);font-size:11px;margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><span>✅ ' + taskDone + '/' + taskTotal + '</span>' + (s.evidence && s.evidence.length ? '<span>📷 ' + s.evidence.length + '</span>' : '') + (s.signature ? '<span>✍️</span>' : '') + (s.checkin ? '<span>📍</span>' : '') + '<span>💶 ' + money(s.price) + '</span></div></div><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span><button class="btn btn-ghost btn-sm" data-action="view-service" data-id="' + s.id + '">Abrir</button></div>';
+        }).join('') + '</div>';
+    }
+
+    /* ===== PORTAL CLIENT ===== */
+    function renderPortal() {
+      const user = api.getUser();
+      const client = api.getClient(user.clientId);
+      if (!client) return emptyState('❓', 'Cliente no configurado', 'Contacta con la administración para vincular tu cuenta.');
+
+      let services = []; try { services = api.visibleServices().sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)); } catch (e) {}
+      const next = services.find(s => ['programado', 'en_camino', 'iniciado'].includes(s.status));
+      const pendingValidation = services.filter(s => s.status === 'finalizado').length;
+      const unpaidInvoices = api.db.invoices.filter(i => i.clientId === client.id && (i.status === 'enviada' || i.status === 'vencida'));
+      const myIncidents = api.visibleIncidents().filter(i => i.status !== 'cerrada');
+
+      let html = '<div class="portal-hero"><h2>👋 Hola, ' + esc(user.name) + '</h2><p>Portal de cliente de ' + esc(client.name) + '</p></div>';
+      html += '<div class="kpi-grid">';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#e0f2fe">📅</div><div><b>' + (next ? 'Próximo' : '—') + '</b><span>' + (next ? esc(next.date) + ' · ' + esc(next.time) : 'Sin próximos servicios') + '</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#dcfce7">⏳</div><div><b>' + pendingValidation + '</b><span>Por validar</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#fef3c7">💶</div><div><b>' + money(unpaidInvoices.reduce((s, i) => s + Number(i.total), 0)) + '</b><span>Pendiente de pago</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#fee2e2">⚠️</div><div><b>' + myIncidents.length + '</b><span>Incidencias abiertas</span></div></div>';
+      html += '</div>';
+
+      // Next service card
+      if (next) {
+        const emp = api.getEmployee(next.employeeId);
+        html += '<div class="card"><h3 style="margin:0 0 10px">Próximo servicio</h3><div style="font-weight:700;font-size:15px">' + esc(next.title) + '</div><div style="color:var(--muted);font-size:13px;margin-top:4px">📅 ' + esc(next.date) + ' · 🕐 ' + esc(next.time) + ' · 👤 ' + esc(emp ? emp.name : 'Sin asignar') + '</div><div class="action-row" style="margin-top:14px"><button class="btn btn-ghost btn-sm" data-action="view-service" data-id="' + next.id + '">Ver detalles</button><button class="btn btn-warn btn-sm" data-action="reschedule" data-id="' + next.id + '">📅 Reprogramar</button>' + (emp && emp.whatsapp ? '<a class="btn btn-whatsapp btn-sm" href="https://wa.me/' + esc(emp.whatsapp.replace(/\D/g, '')) + '?text=' + encodeURIComponent('Hola, soy cliente de ' + client.name + '. Consulta sobre mi servicio del ' + next.date) + '" target="_blank">💬 WhatsApp</a>' : '') + '</div></div>';
+      }
+
+      // Pending validation
+      const toValidate = services.filter(s => s.status === 'finalizado');
+      if (toValidate.length) {
+        html += '<h3 style="margin:22px 0 10px">⏳ Servicios por validar</h3><div style="display:flex;flex-direction:column;gap:10px">';
+        toValidate.forEach(s => {
+          const emp = api.getEmployee(s.employeeId);
+          html += '<div class="card" style="margin-bottom:0"><div style="font-weight:700">' + esc(s.title) + '</div><div style="color:var(--muted);font-size:13px;margin-top:3px">' + esc(s.date) + ' · ' + esc(s.time) + ' · ' + esc(emp ? emp.name : '—') + '</div><div class="action-row" style="margin-top:10px"><button class="btn btn-primary btn-sm" data-action="view-service" data-id="' + s.id + '" data-tab="signature">✍️ Validar y firmar</button><button class="btn btn-warn btn-sm" data-action="new-incident-from-service" data-id="' + s.id + '">⚠️ Notificar problema</button></div></div>';
+        });
+        html += '</div>';
+      }
+
+      // Unpaid invoices
+      if (unpaidInvoices.length) {
+        html += '<h3 style="margin:22px 0 10px">💶 Facturas pendientes</h3><div style="display:flex;flex-direction:column;gap:10px">';
+        unpaidInvoices.forEach(inv => {
+          const st = INVOICE_STATUS[inv.status];
+          html += '<div class="card" style="margin-bottom:0"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><div style="font-weight:700">' + esc(inv.number) + '</div><div style="color:var(--muted);font-size:13px">Emitida: ' + fmtDate(inv.issueDate) + ' · Vence: ' + fmtDate(inv.dueDate) + '</div></div><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span></div><div style="font-size:15px;font-weight:800;margin-top:8px">' + money(inv.total) + '</div><div class="action-row" style="margin-top:10px"><button class="btn btn-ghost btn-sm" data-action="view-invoice" data-id="' + inv.id + '">Ver factura</button><button class="btn btn-ok btn-sm" data-action="client-pay" data-id="' + inv.id + '">💳 Pagar ahora</button></div></div>';
+        });
+        html += '</div>';
+      }
+
+      // Recent history
+      const history = services.filter(s => s.status === 'validado').slice(0, 5);
+      if (history.length) {
+        html += '<h3 style="margin:22px 0 10px">🕐 Historial reciente</h3><div style="display:flex;flex-direction:column;gap:6px">';
+        history.forEach(s => {
+          html += '<div class="card" style="display:flex;align-items:center;gap:10px;padding:12px;margin-bottom:0"><div style="flex:1"><b>' + esc(s.title) + '</b><br><small style="color:var(--muted)">' + esc(s.date) + ' · ' + money(s.price) + '</small></div><span class="status-pill" style="background:#dcfce7;color:#15803d">Validado</span></div>';
+        });
+        html += '</div>';
+      }
+
+      return html;
+    }
+
+    /* ===== INCIDENTS ===== */
+    function renderIncidents() {
+      let incidents = []; try { incidents = api.visibleIncidents().slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)); } catch (e) {}
+      if (!incidents.length) return emptyState('🎉', 'Sin incidencias', 'Todo está en orden.');
+      return '<div style="margin-bottom:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span style="color:var(--muted);font-weight:600">' + incidents.length + ' incidencia' + (incidents.length !== 1 ? 's' : '') + '</span><button class="btn btn-primary" data-action="new-incident">⚠️ Nueva incidencia</button></div><div style="display:flex;flex-direction:column;gap:10px">' +
+        incidents.map(inc => {
+          const svc = api.get('services', inc.serviceId);
+          const client = svc ? api.getClient(svc.clientId) : null;
+          const responsible = inc.responsibleId ? api.getEmployee(inc.responsibleId) : null;
+          const st = INCIDENT_STATUS[inc.status];
+          const pri = INCIDENT_PRI[inc.priority];
+          const sla = api.slaInfo(inc);
+          return '<div class="card" style="margin-bottom:0"><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><div style="flex:1;min-width:220px"><div style="font-weight:700">' + esc(inc.type) + '</div><div style="color:var(--muted);font-size:13px;margin-top:3px">' + (svc ? esc(svc.title) : '—') + ' · ' + (client ? esc(client.name) : '—') + '</div><div style="color:var(--muted);font-size:11px;margin-top:6px">👤 ' + esc(responsible ? responsible.name : 'Sin asignar') + ' · ' + fmtDateTime(inc.createdAt) + '</div></div><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span><span class="status-pill" style="background:#fee2e2;color:#b91c1c">' + pri[0] + '</span><button class="btn btn-ghost btn-sm" data-action="view-incident" data-id="' + inc.id + '">Abrir</button></div>' + (sla ? '<div class="sla-bar ' + sla.kind + '" style="margin-top:10px">' + (sla.kind === 'ok' ? '✅ ' : sla.kind === 'warn' ? '⚠️ ' : '⏰ ') + esc(sla.label) + (isFinite(sla.hoursLeft) ? ' · ' + Math.max(0, Math.round(sla.hoursLeft)) + 'h restantes' : '') + '</div>' : '') + '</div>';
+        }).join('') + '</div>';
+    }
+
+    /* ===== CHAT ===== */
+    function renderChat() {
+      let services = []; try { services = api.visibleServices().slice().sort((a, b) => { const ma = api.messagesOf(a.id), mb = api.messagesOf(b.id); const la = ma.length ? ma[ma.length - 1].date : a.date; const lb = mb.length ? mb[mb.length - 1].date : b.date; return lb.localeCompare(la); }); } catch (e) {}
+      if (!services.length) return emptyState('💬', 'Sin conversaciones', 'Crea un servicio para empezar a chatear.');
+      return '<div style="margin-bottom:14px"><span style="color:var(--muted);font-weight:600">' + services.length + ' conversación' + (services.length !== 1 ? 'es' : '') + '</span></div><div style="display:flex;flex-direction:column;gap:10px">' +
+        services.map(s => {
+          const client = api.getClient(s.clientId);
+          const employee = api.getEmployee(s.employeeId);
+          const msgs = api.messagesOf(s.id);
+          const last = msgs[msgs.length - 1];
+          const st = STATUS_MAP[s.status];
+          return '<div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:0"><div style="flex:1;min-width:220px"><div style="font-weight:700">' + esc(s.title) + '</div><div style="color:var(--muted);font-size:13px;margin-top:3px">' + (client ? esc(client.name) : '—') + ' · ' + (employee ? esc(employee.name) : 'Sin asignar') + '</div>' + (last ? '<div style="color:var(--primary);font-size:12px;margin-top:6px;font-weight:600">' + esc(last.fromName) + ': ' + esc(last.text || '📎 Adjunto') + '</div>' : '<div style="color:var(--muted);font-size:12px;margin-top:6px">Sin mensajes</div>') + '</div><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span><button class="btn btn-primary btn-sm" data-action="view-service" data-id="' + s.id + '" data-tab="chat">💬 Abrir</button></div>';
+        }).join('') + '</div>';
+    }
+
+    /* ===== ROUTES ===== */
+    function renderRoutes() {
+      if (!api.hasPermission('routes')) return emptyState('🔒', 'Sin permisos', 'No tienes acceso a rutas.');
+
+      const routes = api.computeRoute(ui.routeDate);
+      const dateStr = fmtDate(ui.routeDate);
+
+      let html = '<div class="card"><div class="cal-header"><h2 style="margin:0;font-size:18px">🗺️ Rutas del día</h2></div><div class="filter-bar"><label style="margin:0">Fecha:</label><input type="date" data-change="route-date" value="' + esc(ui.routeDate) + '"></div>';
+
+      if (!routes.length) {
+        html += emptyState('📭', 'Sin servicios para este día', 'No hay servicios programados para ' + dateStr);
+        return html + '</div>';
+      }
+
+      // SVG visual map (normalized coordinates)
+      html += '<div class="route-map"><svg id="route-svg" viewBox="0 0 600 340" preserveAspectRatio="xMidYMid meet"></svg></div>';
+
+      routes.forEach((route, rIdx) => {
+        html += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><div><h3 style="margin:0">👤 ' + esc(route.employee ? route.employee.name : 'Sin asignar') + '</h3><div style="color:var(--muted);font-size:12px">' + route.services.length + ' paradas · ~' + route.totalKm + ' km totales</div></div><div class="action-row"><button class="btn btn-ghost btn-sm" data-action="export-ics" data-date="' + esc(ui.routeDate) + '" data-employee="' + esc(route.employeeId) + '">📅 Exportar .ics</button>' + (route.employee && route.employee.whatsapp ? '<a class="btn btn-whatsapp btn-sm" href="https://wa.me/' + esc(route.employee.whatsapp.replace(/\D/g, '')) + '?text=' + encodeURIComponent('Hola, aquí tienes tu ruta del ' + dateStr) + '" target="_blank">💬 Enviar ruta</a>' : '') + '</div></div>';
+        route.services.forEach((s, idx) => {
+          const client = api.getClient(s.clientId);
+          html += '<div class="route-stop"><div class="idx">' + (idx + 1) + '</div><div class="info"><b>' + esc(s.time) + ' · ' + esc(s.title) + '</b><small>' + esc(client ? client.name : '—') + ' · ' + esc(client ? client.address : '—') + '</small></div><button class="btn btn-ghost btn-sm" data-action="view-service" data-id="' + s.id + '">Ver</button></div>';
+        });
+        html += '</div>';
+      });
+
+      html += '</div>';
+      return html;
+    }
+
+    /* ===== BILLING ===== */
+    function renderBilling() {
+      if (!api.hasPermission('billing')) return emptyState('🔒', 'Sin permisos', 'No tienes acceso a facturación.');
+      let invoices = []; let quotes = [];
+      try { invoices = api.list('invoices'); quotes = api.list('quotes'); } catch (e) {}
+
+      const unpaid = invoices.filter(i => i.status === 'enviada' || i.status === 'vencida');
+      const paid = invoices.filter(i => i.status === 'pagada');
+      const totalUnpaid = unpaid.reduce((s, i) => s + Number(i.total), 0);
+      const totalPaid = paid.reduce((s, i) => s + Number(i.total), 0);
+
+      let html = '<div class="tabs"><button type="button" class="tab-btn ' + (ui.billingTab !== 'quotes' ? 'active' : '') + '" data-action="billing-tab" data-tab="invoices">📄 Facturas (' + invoices.length + ')</button><button type="button" class="tab-btn ' + (ui.billingTab === 'quotes' ? 'active' : '') + '" data-action="billing-tab" data-tab="quotes">📝 Presupuestos (' + quotes.length + ')</button></div>';
+
+      html += '<div class="kpi-grid">';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#dcfce7">💰</div><div><b>' + money(totalPaid) + '</b><span>Cobrado</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#fef3c7">⏳</div><div><b>' + money(totalUnpaid) + '</b><span>Pendiente</span><small>' + unpaid.length + ' facturas</small></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#e0f2fe">📄</div><div><b>' + invoices.length + '</b><span>Total facturas</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#ede9fe">📝</div><div><b>' + quotes.length + '</b><span>Presupuestos</span></div></div>';
+      html += '</div>';
+
+      if (ui.billingTab === 'quotes') {
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap"><span style="color:var(--muted);font-weight:600">' + quotes.length + ' presupuesto' + (quotes.length !== 1 ? 's' : '') + '</span><button class="btn btn-primary" data-action="new-quote">＋ Nuevo presupuesto</button></div>';
+        if (!quotes.length) {
+          html += emptyState('📝', 'Sin presupuestos', 'Crea presupuestos para enviar a tus clientes.');
+        } else {
+          html += '<div style="display:flex;flex-direction:column;gap:10px">';
+          quotes.forEach(q => {
+            const client = api.getClient(q.clientId);
+            const st = QUOTE_STATUS[q.status];
+            html += '<div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:0"><div style="flex:1;min-width:220px"><div style="font-weight:700">' + esc(q.number) + '</div><div style="color:var(--muted);font-size:13px;margin-top:3px">🏢 ' + esc(client ? client.name : '—') + ' · ' + fmtDate(q.createdAt) + '</div><div style="font-size:15px;font-weight:800;margin-top:6px">' + money(q.total) + '</div></div><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span><button class="btn btn-ghost btn-sm" data-action="view-quote" data-id="' + q.id + '">Abrir</button></div>';
+          });
+          html += '</div>';
+        }
+        return html;
+      }
+
+      // Invoices tab
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap"><span style="color:var(--muted);font-weight:600">' + invoices.length + ' factura' + (invoices.length !== 1 ? 's' : '') + '</span><button class="btn btn-primary" data-action="new-invoice">＋ Nueva factura</button></div>';
+
+      if (!invoices.length) {
+        html += emptyState('📄', 'Sin facturas', 'Crea una factura manualmente o desde un servicio validado.');
+      } else {
+        html += '<div class="card table-card"><table><thead><tr><th>Número</th><th>Cliente</th><th>Emisión</th><th>Vencimiento</th><th>Total</th><th>Estado</th><th></th></tr></thead><tbody>';
+        invoices.sort((a, b) => b.issueDate.localeCompare(a.issueDate)).forEach(inv => {
+          const client = api.getClient(inv.clientId);
+          const st = INVOICE_STATUS[inv.status];
+          html += '<tr><td style="font-weight:700">' + esc(inv.number) + '</td><td>' + esc(client ? client.name : '—') + '</td><td>' + fmtDate(inv.issueDate) + '</td><td>' + fmtDate(inv.dueDate) + '</td><td style="font-weight:700">' + money(inv.total) + '</td><td><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span></td><td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-action="view-invoice" data-id="' + inv.id + '">Ver</button></td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+
+      return html;
+    }
+
+    /* ===== REPORTS ===== */
+    function renderReports() {
+      if (!api.hasPermission('reports')) return emptyState('🔒', 'Sin permisos', 'No tienes acceso a reportes.');
+
+      const stats = api.reportStats(ui.reportFrom, ui.reportTo);
+
+      let html = '<div class="card"><h3 style="margin:0 0 10px">📊 Periodo del reporte</h3><div class="filter-bar"><label style="margin:0">Desde:</label><input type="date" data-change="report-from" value="' + esc(ui.reportFrom) + '"><label style="margin:0">Hasta:</label><input type="date" data-change="report-to" value="' + esc(ui.reportTo) + '"><button class="btn btn-ghost btn-sm" data-action="report-range" data-range="month">Este mes</button><button class="btn btn-ghost btn-sm" data-action="report-range" data-range="quarter">Trimestre</button><button class="btn btn-ghost btn-sm" data-action="report-range" data-range="year">Año</button></div><div class="action-row"><button class="btn btn-primary" data-action="export-report" data-format="csv">⬇ Exportar CSV</button><button class="btn btn-ghost" data-action="export-report" data-format="pdf">⬇ Exportar PDF</button></div></div>';
+
+      html += '<div class="kpi-grid">';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#e0f2fe">📋</div><div><b>' + stats.totalServices + '</b><span>Servicios</span><small>' + stats.completed + ' completados</small></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#dcfce7">✅</div><div><b>' + stats.completionRate.toFixed(0) + '%</b><span>Tasa de éxito</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#bbf7d0">💶</div><div><b>' + money(stats.revenue) + '</b><span>Ingresos servicios</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#fef3c7">📄</div><div><b>' + money(stats.invoicedTotal) + '</b><span>Facturado</span><small>Cobrado: ' + money(stats.paidTotal) + '</small></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#fee2e2">⏳</div><div><b>' + money(stats.outstandingTotal) + '</b><span>Pendiente de cobro</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#ede9fe">⚠️</div><div><b>' + stats.incidents + '</b><span>Incidencias</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#f0fdf4">⭐</div><div><b>' + stats.avgRating + '</b><span>Valoración media</span></div></div>';
+      html += '<div class="kpi"><div class="kpi-ico" style="background:#fef3c7">❌</div><div><b>' + stats.canceled + '</b><span>Cancelados</span></div></div>';
+      html += '</div>';
+
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="grid2">';
+      html += '<div class="card"><h3 style="margin:0 0 12px">👥 Rendimiento por empleado</h3><table><thead><tr><th>Empleado</th><th>Servicios</th><th>Ingresos</th></tr></thead><tbody>';
+      if (!stats.byEmployee.length) html += '<tr><td colspan="3" class="empty-note">Sin datos en el periodo</td></tr>';
+      stats.byEmployee.sort((a, b) => b.revenue - a.revenue).forEach(e => { html += '<tr><td>' + esc(e.name) + '</td><td>' + e.count + '</td><td>' + money(e.revenue) + '</td></tr>'; });
+      html += '</tbody></table></div>';
+
+      html += '<div class="card"><h3 style="margin:0 0 12px">🏢 Top clientes</h3><table><thead><tr><th>Cliente</th><th>Servicios</th><th>Ingresos</th></tr></thead><tbody>';
+      if (!stats.byClient.length) html += '<tr><td colspan="3" class="empty-note">Sin datos en el periodo</td></tr>';
+      stats.byClient.sort((a, b) => b.revenue - a.revenue).slice(0, 10).forEach(c => { html += '<tr><td>' + esc(c.name) + '</td><td>' + c.count + '</td><td>' + money(c.revenue) + '</td></tr>'; });
+      html += '</tbody></table></div>';
+      html += '</div>';
+
+      return html;
+    }
+
+    /* ===== CLIENTS ===== */
+    function renderClients() {
+      if (!api.hasPermission('clients')) return emptyState('🔒', 'Sin permisos', 'Sin acceso a clientes.');
+      let clients = []; try { clients = api.list('clients'); } catch (e) {}
+      if (!clients.length) return emptyState('🏢', 'Sin clientes', 'Añade tu primer cliente.', '<button class="btn btn-primary" data-action="new-client">＋ Añadir cliente</button>');
+      return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap"><span style="color:var(--muted);font-weight:600">' + clients.length + ' cliente' + (clients.length !== 1 ? 's' : '') + '</span><button class="btn btn-primary" data-action="new-client">＋ Nuevo cliente</button></div><div class="card table-card"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>Contacto</th><th>Dirección</th><th></th></tr></thead><tbody>' + clients.map(c => '<tr><td style="font-weight:600">' + esc(c.name) + '<br><small style="color:var(--muted)">' + esc(c.taxId || '') + '</small></td><td>' + esc(c.type) + '</td><td>' + esc(c.phone) + '<br><small style="color:var(--muted)">' + esc(c.email || '') + '</small></td><td style="color:var(--muted);font-size:13px">' + esc(c.address) + '</td><td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-action="edit-client" data-id="' + c.id + '">✏️</button> <button class="btn btn-danger btn-sm" data-action="delete-client" data-id="' + c.id + '">🗑</button></td></tr>').join('') + '</tbody></table></div>';
+    }
+
+    function renderEmployees() {
+      if (!api.hasPermission('employees')) return emptyState('🔒', 'Sin permisos', 'Sin acceso a personal.');
+      let employees = []; try { employees = api.list('employees'); } catch (e) {}
+      if (!employees.length) return emptyState('👥', 'Sin personal', 'Registra empleados.', '<button class="btn btn-primary" data-action="new-employee">＋ Añadir empleado</button>');
+      return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap"><span style="color:var(--muted);font-weight:600">' + employees.length + ' empleado' + (employees.length !== 1 ? 's' : '') + '</span><button class="btn btn-primary" data-action="new-employee">＋ Nuevo empleado</button></div><div class="card table-card"><table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Zona</th><th>Especialidad</th><th></th></tr></thead><tbody>' + employees.map(e => '<tr><td style="font-weight:600">' + esc(e.name) + '</td><td>' + esc(e.phone) + '</td><td>' + esc(e.zone) + '</td><td>' + esc(e.specialty || '—') + '</td><td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-action="edit-employee" data-id="' + e.id + '">✏️</button> <button class="btn btn-danger btn-sm" data-action="delete-employee" data-id="' + e.id + '">🗑</button></td></tr>').join('') + '</tbody></table></div>';
+    }
+
+    /* ===== SERVICE DETAIL ===== */
+    function serviceDetailHTML(svc) {
+      const user = api.getUser();
+      const client = api.getClient(svc.clientId);
+      const employee = api.getEmployee(svc.employeeId);
+      const st = STATUS_MAP[svc.status];
+      const canEdit = canEditService(svc);
+      const isStaff = user.role === 'staff';
+      const isAdmin = ['admin', 'manager'].includes(user.role);
+      const isClient = user.role === 'client';
+
+      const tabs = [
+        { id: 'resumen', label: '📋 Resumen' },
+        { id: 'checkin', label: '📍 Check-in' },
+        { id: 'tasks', label: '✅ Tareas (' + (svc.tasks || []).filter(t => t.done).length + '/' + (svc.tasks || []).length + ')' },
+        { id: 'evidence', label: '📷 Evidencia' },
+        { id: 'signature', label: '✍️ Firma' },
+        { id: 'chat', label: '💬 Chat' },
+        { id: 'qr', label: '🔳 QR' }
+      ];
+
+      let body = '';
+
+      if (ui.serviceTab === 'resumen') {
+        body = '<div class="info-box"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>' + esc(svc.title) + '</b><br><small style="color:var(--muted)">' + (client ? esc(client.name) + ' · ' + esc(client.address) : '—') + '</small></div><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span></div><div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;font-size:13px"><div>🕐 ' + esc(svc.date) + ' · ' + esc(svc.time) + '</div><div>👤 ' + esc(employee ? employee.name : 'Sin asignar') + '</div><div>🏷️ ' + esc(svc.type) + '</div><div>💶 ' + money(svc.price) + '</div></div></div>';
+        if (client && client.notes) body += '<div class="info-box"><b>Notas</b><br>' + esc(client.notes) + '</div>';
+        body += '<div class="checkin-box ' + (svc.checkin ? 'done' : '') + '"><b>📍 Check-in</b><br><small>' + (svc.checkin ? fmtDateTime(svc.checkin.at) + (svc.checkin.coords ? ' · ' + Number(svc.checkin.coords.lat).toFixed(4) + ', ' + Number(svc.checkin.coords.lng).toFixed(4) : '') : 'Sin registrar') + '</small></div>';
+        body += '<div class="checkin-box ' + (svc.checkout ? 'done' : '') + '"><b>🏁 Check-out</b><br><small>' + (svc.checkout ? fmtDateTime(svc.checkout.at) : 'Sin registrar') + '</small></div>';
+
+        body += '<div class="action-row" style="margin-top:8px">';
+        if (canEdit) {
+          if (svc.status === 'programado') body += '<button class="btn btn-primary btn-sm" data-action="svc-checkin" data-id="' + svc.id + '">📍 Check-in</button>';
+          if (svc.status === 'en_camino' || svc.status === 'programado') body += '<button class="btn btn-primary btn-sm" data-action="svc-start" data-id="' + svc.id + '">▶️ Iniciar</button>';
+          if (svc.status === 'iniciado') body += '<button class="btn btn-ok btn-sm" data-action="svc-finalize" data-id="' + svc.id + '">✅ Finalizar</button>';
+          if (svc.status === 'finalizado') body += '<button class="btn btn-ok btn-sm" data-action="svc-validate" data-id="' + svc.id + '">⭐ Validar</button>';
+          if (svc.status !== 'validado' && svc.status !== 'cancelado') body += '<button class="btn btn-danger btn-sm" data-action="svc-cancel" data-id="' + svc.id + '">✖ Cancelar</button>';
+        }
+        if (isClient && ['programado', 'en_camino'].includes(svc.status)) body += '<button class="btn btn-warn btn-sm" data-action="reschedule" data-id="' + svc.id + '">📅 Reprogramar</button>';
+        if (canEdit) body += '<button class="btn btn-ghost btn-sm" data-action="edit-service" data-id="' + svc.id + '">✏️ Editar</button>';
+        if (isAdmin) body += '<button class="btn btn-ok btn-sm" data-action="invoice-from-service" data-id="' + svc.id + '">💶 Facturar</button>';
+        if (isAdmin) body += '<button class="btn btn-danger btn-sm" data-action="delete-service" data-id="' + svc.id + '">🗑</button>';
+        body += '<button class="btn btn-warn btn-sm" data-action="new-incident-from-service" data-id="' + svc.id + '">⚠️ Incidencia</button>';
+        if (client && client.email) body += '<a class="btn btn-ghost btn-sm" href="mailto:' + esc(client.email) + '?subject=' + encodeURIComponent('Servicio ' + svc.title + ' - ' + svc.date) + '">✉ Email</a>';
+        if (employee && employee.whatsapp) body += '<a class="btn btn-whatsapp btn-sm" href="https://wa.me/' + esc(employee.whatsapp.replace(/\D/g, '')) + '?text=' + encodeURIComponent('Hola, consulta sobre el servicio ' + svc.title + ' del ' + svc.date) + '" target="_blank">💬 WhatsApp</a>';
+        body += '</div>';
+      } else if (ui.serviceTab === 'checkin') {
+        body = '<div class="info-box"><b>Control de asistencia GPS</b><br>Registra la ubicación real en el punto de servicio.</div>';
+        body += '<div class="checkin-box ' + (svc.checkin ? 'done' : '') + '"><b>📍 Check-in</b><br><small>' + (svc.checkin ? fmtDateTime(svc.checkin.at) + (svc.checkin.coords ? '<br>Lat: ' + Number(svc.checkin.coords.lat).toFixed(5) + ', Lng: ' + Number(svc.checkin.coords.lng).toFixed(5) : '') : 'Sin registrar') + '</small>' + (canEdit && !svc.checkin ? '<div style="margin-top:8px"><button class="btn btn-primary btn-sm" data-action="svc-checkin" data-id="' + svc.id + '">Registrar</button></div>' : '') + '</div>';
+        body += '<div class="checkin-box ' + (svc.checkout ? 'done' : '') + '"><b>🏁 Check-out</b><br><small>' + (svc.checkout ? fmtDateTime(svc.checkout.at) : 'Sin registrar') + '</small>' + (canEdit && svc.checkin && !svc.checkout ? '<div style="margin-top:8px"><button class="btn btn-ok btn-sm" data-action="svc-checkout" data-id="' + svc.id + '">Registrar</button></div>' : '') + '</div>';
+        if (client && client.address) body += '<div class="info-box"><b>Dirección</b><br>' + esc(client.address) + '<br><a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(client.address) + '" target="_blank" style="color:var(--primary);font-weight:700">🗺️ Abrir en Maps</a></div>';
+      } else if (ui.serviceTab === 'tasks') {
+        const tasks = svc.tasks || [];
+        body = '<div style="display:flex;flex-direction:column;gap:8px">';
+        if (!tasks.length) body += '<div class="empty-note">Sin tareas.</div>';
+        tasks.forEach(t => { body += '<div class="task ' + (t.done ? 'done' : '') + '"><input type="checkbox" data-action="toggle-task" data-service="' + svc.id + '" data-task="' + t.id + '" ' + (t.done ? 'checked' : '') + ' ' + (!canEdit ? 'disabled' : '') + '><span>' + esc(t.name) + '</span>' + (canEdit ? '<button class="btn btn-danger btn-sm" data-action="remove-task" data-service="' + svc.id + '" data-task="' + t.id + '">✕</button>' : '') + '</div>'; });
+        body += '</div>';
+        if (canEdit) body += '<form data-form="add-task" data-service="' + svc.id + '" style="display:flex;gap:8px;margin-top:14px"><input name="name" placeholder="Nueva tarea..." required style="flex:1"><button class="btn btn-primary" type="submit">Añadir</button></form>';
+      } else if (ui.serviceTab === 'evidence') {
+        const evidence = svc.evidence || [];
+        body = '<div class="info-box"><b>Fotos de evidencia</b><br>Máximo 6 fotos.</div>';
+        if (canEdit && evidence.length < 6) body += '<label class="btn btn-primary" style="display:inline-flex;cursor:pointer;margin-bottom:12px">📷 Añadir foto<input type="file" accept="image/*" capture="environment" data-action="add-evidence" data-id="' + svc.id + '" style="display:none"></label>';
+        body += '<div class="evidence-grid">';
+        if (!evidence.length) body += '<div class="empty-note">Aún no hay fotos.</div>';
+        evidence.forEach(ev => { body += '<div class="evidence-item"><img src="' + ev.data + '"><small style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.65);color:#fff;padding:2px 6px;border-radius:6px;font-size:10px">' + fmtDateTime(ev.at) + '</small>' + (canEdit ? '<button class="evidence-remove" data-action="remove-evidence" data-service="' + svc.id + '" data-evidence="' + ev.id + '">✕</button>' : '') + '</div>'; });
+        body += '</div>';
+      } else if (ui.serviceTab === 'signature') {
+        body = '<div class="info-box"><b>Firma del cliente</b><br>Confirma la aceptación del servicio.</div>';
+        if (svc.signature && svc.signature.data) {
+          body += '<div style="text-align:center;padding:12px;background:#fff;border-radius:12px;border:1px solid var(--line)"><img src="' + svc.signature.data + '" style="max-width:100%;max-height:200px"><div style="margin-top:8px;font-size:12px;color:var(--muted)">' + esc(svc.signature.by) + ' · ' + fmtDateTime(svc.signature.at) + '</div></div>';
+          if (canEdit) body += '<div style="text-align:right;margin-top:8px"><button class="btn btn-danger btn-sm" data-action="clear-signature" data-id="' + svc.id + '">Borrar</button></div>';
+        } else if (canEdit || isClient) {
+          body += '<div style="text-align:center"><canvas class="signature-pad" id="signature-canvas" width="480" height="200"></canvas><div style="margin-top:10px;display:flex;gap:8px;justify-content:center"><button class="btn btn-ghost" data-action="clear-signature-canvas">Limpiar</button><button class="btn btn-primary" data-action="save-signature" data-id="' + svc.id + '">Guardar firma</button></div></div>';
+        } else { body += '<div class="empty-note">Sin firma.</div>'; }
+      } else if (ui.serviceTab === 'chat') {
+        const messages = api.messagesOf(svc.id);
+        body = '<div class="chat" id="chat-box">';
+        if (!messages.length) body += '<div class="empty-note">Inicia la conversación.</div>';
+        messages.forEach(m => {
+          const mine = m.fromId === user.userId;
+          body += '<div class="msg ' + (mine ? 'mine' : '') + '"><span class="who">' + esc(m.fromName) + ' · ' + esc(m.fromRole) + '</span>' + (m.text ? esc(m.text) : '') + (m.attachments && m.attachments.length ? '<div class="msg-attach">' + m.attachments.map(a => '<img src="' + a.data + '">').join('') + '</div>' : '') + '<small>' + fmtDateTime(m.date) + '</small></div>';
+        });
+        body += '</div><form data-form="send-message" data-service="' + svc.id + '" class="chat-input"><input type="file" accept="image/*" id="chat-attach-' + svc.id + '" data-attach-input="' + svc.id + '"><label for="chat-attach-' + svc.id + '" class="file-label">📎</label><input name="text" placeholder="Escribe un mensaje..." style="flex:1"><button class="btn btn-primary">➤</button></form><div id="chat-attach-preview-' + svc.id + '" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>';
+      } else if (ui.serviceTab === 'qr') {
+        body = '<div class="info-box"><b>QR del servicio</b><br>Escanea para validar presencia.</div><div class="qr-wrap"><canvas id="qr-canvas"></canvas></div><div style="text-align:center;margin-top:10px;font-size:12px;color:var(--muted)">' + esc(svc.id) + '<br>' + esc(svc.title) + ' · ' + esc(svc.date) + ' ' + esc(svc.time) + '</div>';
+      }
+
+      return '<h2 id="modal-title">' + esc(svc.title) + '</h2><div class="tabs">' + tabs.map(t => '<button type="button" class="tab-btn ' + (ui.serviceTab === t.id ? 'active' : '') + '" data-action="svc-tab" data-tab="' + t.id + '">' + t.label + '</button>').join('') + '</div>' + body;
+    }
+
+    function incidentDetailHTML(inc) {
+      const svc = api.get('services', inc.serviceId);
+      const client = svc ? api.getClient(svc.clientId) : null;
+      const responsible = inc.responsibleId ? api.getEmployee(inc.responsibleId) : null;
+      const st = INCIDENT_STATUS[inc.status];
+      const pri = INCIDENT_PRI[inc.priority];
+      const sla = api.slaInfo(inc);
+      const user = api.getUser();
+      const isAdmin = ['admin', 'manager'].includes(user.role);
+      let employees = []; try { employees = api.list('employees'); } catch (e) {}
+
+      let html = '<h2 id="modal-title">⚠️ ' + esc(inc.type) + '</h2>';
+      html += '<div class="info-box"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px"><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span><span class="status-pill" style="background:#fee2e2;color:#b91c1c">' + pri[0] + '</span></div><b>' + (svc ? esc(svc.title) : '—') + '</b><br><small>' + (client ? esc(client.name) : '—') + '</small><div style="margin-top:8px">👤 ' + esc(responsible ? responsible.name : 'Sin asignar') + '</div><div>Creada por: ' + esc(inc.createdBy) + ' · ' + fmtDateTime(inc.createdAt) + '</div></div>';
+      if (sla) html += '<div class="sla-bar ' + sla.kind + '">' + (sla.kind === 'ok' ? '✅ ' : sla.kind === 'warn' ? '⚠️ ' : '⏰ ') + esc(sla.label) + (isFinite(sla.hoursLeft) ? ' · ' + Math.max(0, Math.round(sla.hoursLeft)) + 'h' : '') + '</div>';
+      html += '<div class="field"><label>Descripción</label><div style="background:#f8fafc;padding:12px;border-radius:10px;font-size:13px">' + esc(inc.description) + '</div></div>';
+      if (isAdmin) {
+        html += '<form data-form="incident-update" data-id="' + inc.id + '" class="form-row"><div class="field"><label>Estado</label><select name="status">' + Object.keys(INCIDENT_STATUS).map(k => '<option value="' + k + '" ' + (inc.status === k ? 'selected' : '') + '>' + INCIDENT_STATUS[k][0] + '</option>').join('') + '</select></div><div class="field"><label>Responsable</label><select name="responsibleId"><option value="">Sin asignar</option>' + employees.map(e => '<option value="' + e.id + '" ' + (inc.responsibleId === e.id ? 'selected' : '') + '>' + esc(e.name) + '</option>').join('') + '</select></div><div style="grid-column:1/-1"><button class="btn btn-primary btn-sm" type="submit">Actualizar</button></div></form>';
+      }
+      html += '<h3 style="font-size:14px;margin:18px 0 8px">📜 Timeline</h3><div class="timeline">';
+      (inc.timeline || []).slice().reverse().forEach(t => { html += '<div class="timeline-item"><strong>' + esc(t.action) + '</strong><small>' + esc(t.by) + ' · ' + fmtDateTime(t.at) + '</small></div>'; });
+      html += '</div><h3 style="font-size:14px;margin:18px 0 8px">💬 Comentarios (' + (inc.comments || []).length + ')</h3><div class="chat" id="inc-chat">';
+      if (!(inc.comments || []).length) html += '<div class="empty-note">Sin comentarios.</div>';
+      (inc.comments || []).forEach(c => {
+        const mine = c.fromId === user.userId;
+        html += '<div class="msg ' + (mine ? 'mine' : '') + '"><span class="who">' + esc(c.fromName) + ' · ' + esc(c.fromRole) + '</span>' + esc(c.text) + '<small>' + fmtDateTime(c.date) + '</small></div>';
+      });
+      html += '</div><form data-form="incident-comment" data-id="' + inc.id + '" class="chat-input"><input name="text" placeholder="Comentario..." required style="flex:1"><button class="btn btn-primary">➤</button></form>';
+      return html;
+    }
+
+    function invoiceDetailHTML(inv) {
+      const client = api.getClient(inv.clientId);
+      const co = api.getCompany();
+      const st = INVOICE_STATUS[inv.status];
+
+      let html = '<h2 id="modal-title">Factura ' + esc(inv.number) + '</h2>';
+      html += '<div class="invoice-preview"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:14px"><div><h3 style="margin:0">' + esc(co.name) + '</h3><div style="font-size:12px;color:var(--muted)">' + esc(co.taxId) + '<br>' + esc(co.address) + '<br>' + esc(co.email) + '</div></div><div style="text-align:right"><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span><div style="font-size:12px;color:var(--muted);margin-top:6px">Emisión: ' + fmtDate(inv.issueDate) + '<br>Vence: ' + fmtDate(inv.dueDate) + '</div></div></div>';
+      html += '<div style="background:#f8fafc;padding:10px;border-radius:10px;margin-bottom:14px"><b>Cliente</b><br>' + esc(client ? client.name : '—') + (client && client.taxId ? '<br>' + esc(client.taxId) : '') + '<br><small>' + esc(client ? client.address : '') + '</small></div>';
+      html += '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:#f1f5f9"><th style="text-align:left;padding:8px">Concepto</th><th style="text-align:right;padding:8px">Cant.</th><th style="text-align:right;padding:8px">Precio</th><th style="text-align:right;padding:8px">IVA</th><th style="text-align:right;padding:8px">Total</th></tr></thead><tbody>';
+      (inv.items || []).forEach(i => {
+        const line = (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0);
+        const tax = line * ((Number(i.tax) || 0) / 100);
+        html += '<tr><td style="padding:8px">' + esc(i.description) + '</td><td style="text-align:right;padding:8px">' + esc(i.quantity) + '</td><td style="text-align:right;padding:8px">' + money(i.unitPrice) + '</td><td style="text-align:right;padding:8px">' + esc(i.tax) + '%</td><td style="text-align:right;padding:8px">' + money(line + tax) + '</td></tr>';
+      });
+      html += '</tbody></table><div class="tot">Subtotal: ' + money(inv.subtotal) + '<br>IVA: ' + money(inv.tax) + '<br><span style="font-size:18px;color:var(--primary)">TOTAL: ' + money(inv.total) + '</span></div>';
+      if (inv.notes) html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"><b>Notas:</b> ' + esc(inv.notes) + '</div>';
+      if (inv.paidAt) html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);color:var(--ok);font-weight:700">✓ Pagada el ' + fmtDate(inv.paidAt) + '</div>';
+      html += '</div>';
+
+      html += '<h3 style="font-size:14px;margin:18px 0 8px">📜 Timeline</h3><div class="timeline">';
+      (inv.timeline || []).slice().reverse().forEach(t => { html += '<div class="timeline-item"><strong>' + esc(t.action) + '</strong><small>' + fmtDate(t.at) + '</small></div>'; });
+      html += '</div>';
+
+      html += '<div class="action-row" style="margin-top:14px"><button class="btn btn-primary" data-action="download-invoice" data-id="' + inv.id + '">⬇ Descargar PDF</button><button class="btn btn-ghost" data-action="email-invoice" data-id="' + inv.id + '">✉ Enviar email</button><button class="btn btn-whatsapp" data-action="whatsapp-invoice" data-id="' + inv.id + '">💬 Compartir</button>';
+      if (inv.status === 'borrador') html += '<button class="btn btn-ghost" data-action="invoice-to-sent" data-id="' + inv.id + '">📤 Marcar enviada</button>';
+      if (inv.status === 'enviada' || inv.status === 'vencida') html += '<button class="btn btn-ok" data-action="invoice-to-paid" data-id="' + inv.id + '">✓ Marcar pagada</button><button class="btn btn-ghost" data-action="client-pay" data-id="' + inv.id + '">💳 Pago online</button>';
+      html += '</div>';
+
+      return html;
+    }
+
+    function quoteDetailHTML(q) {
+      const client = api.getClient(q.clientId);
+      const co = api.getCompany();
+      const st = QUOTE_STATUS[q.status];
+
+      let html = '<h2 id="modal-title">Presupuesto ' + esc(q.number) + '</h2>';
+      html += '<div class="invoice-preview"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:14px"><div><h3 style="margin:0">' + esc(co.name) + '</h3><div style="font-size:12px;color:var(--muted)">' + esc(co.address) + '</div></div><div style="text-align:right"><span class="status-pill" style="background:' + st[1] + ';color:' + st[2] + '">' + st[0] + '</span><div style="font-size:12px;color:var(--muted);margin-top:6px">Fecha: ' + fmtDate(q.createdAt) + '</div></div></div>';
+      html += '<div style="background:#f8fafc;padding:10px;border-radius:10px;margin-bottom:14px"><b>Cliente</b><br>' + esc(client ? client.name : '—') + '</div>';
+      html += '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:#f1f5f9"><th style="text-align:left;padding:8px">Concepto</th><th style="text-align:right;padding:8px">Cant.</th><th style="text-align:right;padding:8px">Precio</th><th style="text-align:right;padding:8px">Total</th></tr></thead><tbody>';
+      (q.items || []).forEach(i => {
+        const line = (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0);
+        html += '<tr><td style="padding:8px">' + esc(i.description) + '</td><td style="text-align:right;padding:8px">' + esc(i.quantity) + '</td><td style="text-align:right;padding:8px">' + money(i.unitPrice) + '</td><td style="text-align:right;padding:8px">' + money(line) + '</td></tr>';
+      });
+      html += '</tbody></table><div class="tot">Subtotal: ' + money(q.subtotal) + '<br>IVA: ' + money(q.tax) + '<br><span style="font-size:18px;color:var(--primary)">TOTAL: ' + money(q.total) + '</span></div>';
+      if (q.notes) html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"><b>Notas:</b> ' + esc(q.notes) + '</div>';
+      html += '</div>';
+
+      html += '<div class="action-row" style="margin-top:14px"><button class="btn btn-primary" data-action="download-quote" data-id="' + q.id + '">⬇ Descargar PDF</button><button class="btn btn-ghost" data-action="edit-quote" data-id="' + q.id + '">✏️ Editar</button>';
+      if (q.status === 'borrador') html += '<button class="btn btn-ghost" data-action="quote-to-sent" data-id="' + q.id + '">📤 Marcar enviado</button>';
+      if (q.status === 'enviado') html += '<button class="btn btn-ok" data-action="quote-to-accept" data-id="' + q.id + '">✓ Aceptado</button><button class="btn btn-danger" data-action="quote-to-reject" data-id="' + q.id + '">✗ Rechazado</button>';
+      if (q.status === 'aceptado') html += '<button class="btn btn-primary" data-action="convert-quote-to-invoice" data-id="' + q.id + '">💶 Convertir en factura</button>';
+      html += '</div>';
+      return html;
+    }
+
+    /* ===== FORMS ===== */
+    function clientFormHTML(c) {
+      c = c || {};
+      const types = ['Hogar', 'Oficina', 'Clínica', 'Local', 'Comunidad'];
+      return '<h2 id="modal-title">' + (c.id ? 'Editar' : 'Nuevo') + ' cliente</h2><form data-form="clients" data-id="' + (c.id || '') + '" novalidate><div class="field"><label>Nombre *</label><input name="name" required value="' + esc(c.name || '') + '"><span class="error-msg"></span></div><div class="form-row"><div class="field"><label>Tipo</label><select name="type">' + types.map(t => '<option ' + (c.type === t ? 'selected' : '') + '>' + t + '</option>').join('') + '</select><span class="error-msg"></span></div><div class="field"><label>Teléfono *</label><input name="phone" required value="' + esc(c.phone || '') + '"><span class="error-msg"></span></div></div><div class="form-row"><div class="field"><label>Email portal cliente</label><input name="email" type="email" value="' + esc(c.email || '') + '"><span class="error-msg"></span></div><div class="field"><label>CIF/NIF</label><input name="taxId" value="' + esc(c.taxId || '') + '"><span class="error-msg"></span></div></div><div class="field"><label>Dirección *</label><input name="address" required value="' + esc(c.address || '') + '"><span class="error-msg"></span></div><div class="field"><label>Notas</label><textarea name="notes" rows="2">' + esc(c.notes || '') + '</textarea><span class="error-msg"></span></div><div class="modal-actions"><span style="flex:1"></span><button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form>';
+    }
+
+    function employeeFormHTML(e) {
+      e = e || {};
+      return '<h2 id="modal-title">' + (e.id ? 'Editar' : 'Nuevo') + ' empleado</h2><form data-form="employees" data-id="' + (e.id || '') + '" novalidate><div class="field"><label>Nombre *</label><input name="name" required value="' + esc(e.name || '') + '"><span class="error-msg"></span></div><div class="form-row"><div class="field"><label>Teléfono *</label><input name="phone" required value="' + esc(e.phone || '') + '"><span class="error-msg"></span></div><div class="field"><label>Zona *</label><input name="zone" required value="' + esc(e.zone || '') + '"><span class="error-msg"></span></div></div><div class="form-row"><div class="field"><label>WhatsApp</label><input name="whatsapp" value="' + esc(e.whatsapp || '') + '"><span class="error-msg"></span></div><div class="field"><label>Especialidad</label><input name="specialty" value="' + esc(e.specialty || '') + '"><span class="error-msg"></span></div></div><div class="modal-actions"><span style="flex:1"></span><button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form>';
+    }
+
+    function serviceFormHTML(s, prefillDate) {
+      s = s || {};
+      let clients = [], employees = [];
+      try { clients = api.list('clients'); employees = api.list('employees'); } catch (e) {}
+      return '<h2 id="modal-title">' + (s.id ? 'Editar' : 'Nuevo') + ' servicio</h2><form data-form="services" data-id="' + (s.id || '') + '" novalidate><div class="field"><label>Título *</label><input name="title" required value="' + esc(s.title || '') + '"><span class="error-msg"></span></div><div class="form-row"><div class="field"><label>Cliente *</label><select name="clientId" required><option value="">Selecciona…</option>' + clients.map(c => '<option value="' + c.id + '" ' + (s.clientId === c.id ? 'selected' : '') + '>' + esc(c.name) + '</option>').join('') + '</select><span class="error-msg"></span></div><div class="field"><label>Empleado *</label><select name="employeeId" required><option value="">Selecciona…</option>' + employees.map(e => '<option value="' + e.id + '" ' + (s.employeeId === e.id ? 'selected' : '') + '>' + esc(e.name) + '</option>').join('') + '</select><span class="error-msg"></span></div></div><div class="form-row"><div class="field"><label>Fecha *</label><input name="date" type="date" required value="' + esc(s.date || prefillDate || '') + '"><span class="error-msg"></span></div><div class="field"><label>Hora *</label><input name="time" type="time" required value="' + esc(s.time || '') + '"><span class="error-msg"></span></div></div><div class="form-row"><div class="field"><label>Tipo</label><select name="type">' + ['Hogar', 'Oficinas', 'Clínica', 'Profunda', 'Post-obra', 'Cristales'].map(t => '<option ' + (s.type === t ? 'selected' : '') + '>' + t + '</option>').join('') + '</select><span class="error-msg"></span></div><div class="field"><label>Precio (€)</label><input name="price" type="number" min="0" step="0.01" value="' + esc(s.price || 0) + '"><span class="error-msg"></span></div></div>' + (s.id ? '<div class="field"><label>Estado</label><select name="status">' + Object.keys(STATUS_MAP).map(k => '<option value="' + k + '" ' + (s.status === k ? 'selected' : '') + '>' + STATUS_MAP[k][0] + '</option>').join('') + '</select><span class="error-msg"></span></div>' : '') + '<div class="field"><label>Checklist (una tarea por línea)</label><textarea name="tasksText" rows="3">' + esc((s.tasks || []).map(t => t.name).join('\n')) + '</textarea><span class="error-msg"></span></div><div class="modal-actions"><span style="flex:1"></span><button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form>';
+    }
+
+    function rescheduleFormHTML(svc) {
+      return '<h2 id="modal-title">📅 Reprogramar servicio</h2><div class="info-box"><b>' + esc(svc.title) + '</b><br>📅 Actual: ' + esc(svc.date) + ' · 🕐 ' + esc(svc.time) + '</div><form data-form="reschedule" data-id="' + svc.id + '" novalidate><div class="form-row"><div class="field"><label>Nueva fecha *</label><input name="date" type="date" required value="' + esc(svc.date) + '" min="' + localISO(new Date()) + '"><span class="error-msg"></span></div><div class="field"><label>Nueva hora *</label><input name="time" type="time" required value="' + esc(svc.time) + '"><span class="error-msg"></span></div></div><div class="field"><label>Motivo (opcional)</label><textarea name="reason" rows="2" placeholder="Explica brevemente el motivo..."></textarea></div><div class="modal-actions"><span style="flex:1"></span><button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn-primary">Confirmar reprogramación</button></div></form>';
+    }
+
+    function incidentFormHTML(prefillServiceId) {
+      let services = []; let employees = [];
+      try { services = api.visibleServices(); employees = api.list('employees'); } catch (e) {}
+      return '<h2 id="modal-title">⚠️ Nueva incidencia</h2><form data-form="incidents" novalidate><div class="field"><label>Servicio *</label><select name="serviceId" required><option value="">Selecciona…</option>' + services.map(s => '<option value="' + s.id + '" ' + (prefillServiceId === s.id ? 'selected' : '') + '>' + esc(s.title) + ' · ' + esc(s.date) + '</option>').join('') + '</select><span class="error-msg"></span></div><div class="form-row"><div class="field"><label>Tipo *</label><select name="type" required><option value="">Selecciona…</option>' + ['Limpieza incompleta', 'Retraso', 'Ausencia', 'Daño', 'Queja', 'Solicitud adicional', 'Problema de acceso'].map(t => '<option>' + t + '</option>').join('') + '</select><span class="error-msg"></span></div><div class="field"><label>Prioridad *</label><select name="priority" required><option value="alta">Alta (4h)</option><option value="media" selected>Media (24h)</option><option value="baja">Baja (72h)</option></select><span class="error-msg"></span></div></div><div class="field"><label>Responsable</label><select name="responsibleId"><option value="">Sin asignar</option>' + employees.map(e => '<option value="' + e.id + '">' + esc(e.name) + '</option>').join('') + '</select><span class="error-msg"></span></div><div class="field"><label>Descripción *</label><textarea name="description" rows="3" required></textarea><span class="error-msg"></span></div><div class="modal-actions"><span style="flex:1"></span><button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn-primary">Reportar</button></div></form>';
+    }
+
+    function invoiceFormHTML(inv) {
+      inv = inv || {};
+      let clients = []; try { clients = api.list('clients'); } catch (e) {}
+      const items = inv.items || [{ description: '', quantity: 1, unitPrice: 0, tax: 21 }];
+      return '<h2 id="modal-title">' + (inv.id ? 'Editar' : 'Nueva') + ' factura</h2><form data-form="invoices" data-id="' + (inv.id || '') + '" data-items=\'' + esc(JSON.stringify(items)) + '\' novalidate><div class="field"><label>Cliente *</label><select name="clientId" required><option value="">Selecciona…</option>' + clients.map(c => '<option value="' + c.id + '" ' + (inv.clientId === c.id ? 'selected' : '') + '>' + esc(c.name) + '</option>').join('') + '</select><span class="error-msg"></span></div><div class="form-row"><div class="field"><label>Emisión *</label><input name="issueDate" type="date" required value="' + esc(inv.issueDate || localISO(new Date())) + '"><span class="error-msg"></span></div><div class="field"><label>Vencimiento *</label><input name="dueDate" type="date" required value="' + esc(inv.dueDate || addDaysISO(30)) + '"><span class="error-msg"></span></div></div><div class="field"><label>Líneas</label><div id="invoice-lines"></div><button type="button" class="btn btn-ghost btn-sm" data-action="add-invoice-line" style="margin-top:8px">＋ Añadir línea</button></div><div class="field"><label>Notas</label><textarea name="notes" rows="2">' + esc(inv.notes || '') + '</textarea></div><div class="modal-actions"><span style="flex:1"></span><button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form>';
+    }
+
+    function quoteFormHTML(q) {
+      q = q || {};
+      let clients = []; try { clients = api.list('clients'); } catch (e) {}
+      const items = q.items || [{ description: '', quantity: 1, unitPrice: 0, tax: 21 }];
+      return '<h2 id="modal-title">' + (q.id ? 'Editar' : 'Nuevo') + ' presupuesto</h2><form data-form="quotes" data-id="' + (q.id || '') + '" data-items=\'' + esc(JSON.stringify(items)) + '\' novalidate><div class="field"><label>Cliente *</label><select name="clientId" required><option value="">Selecciona…</option>' + clients.map(c => '<option value="' + c.id + '" ' + (q.clientId === c.id ? 'selected' : '') + '>' + esc(c.name) + '</option>').join('') + '</select><span class="error-msg"></span></div><div class="field"><label>Líneas</label><div id="quote-lines"></div><button type="button" class="btn btn-ghost btn-sm" data-action="add-quote-line" style="margin-top:8px">＋ Añadir línea</button></div><div class="field"><label>Notas</label><textarea name="notes" rows="2">' + esc(q.notes || '') + '</textarea></div><div class="modal-actions"><span style="flex:1"></span><button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form>';
+    }
+
+    /* ===== MAIN RENDER ===== */
+    function render() {
+      ensureSection();
+      if (!api.isAuthenticated()) { renderLogin(); return; }
+      renderSidebar(); renderHeader();
+      const titles = {
+        calendar: 'Calendario', services: 'Servicios', portal: 'Mi portal',
+        incidents: 'Incidencias', chat: 'Chat', clients: 'Clientes', employees: 'Personal',
+        routes: 'Rutas del día', billing: 'Facturación', reports: 'Reportes'
+      };
+      $('#page-title').textContent = titles[ui.section] || 'CleanOps';
+      const map = {
+        calendar: renderCalendar, services: renderServices, portal: renderPortal,
+        incidents: renderIncidents, chat: renderChat, clients: renderClients, employees: renderEmployees,
+        routes: renderRoutes, billing: renderBilling, reports: renderReports
+      };
+      $('#content').innerHTML = (map[ui.section] || renderCalendar)();
+
+      // Post-render for routes SVG
+      if (ui.section === 'routes') {
+        setTimeout(drawRouteSVG, 30);
+      }
+    }
+
+    function drawRouteSVG() {
+      const svg = document.getElementById('route-svg');
+      if (!svg) return;
+      const routes = api.computeRoute(ui.routeDate);
+      if (!routes.length) { svg.innerHTML = ''; return; }
+
+      // Collect all points
+      const points = [];
+      routes.forEach(r => r.services.forEach(s => { if (s.coords) points.push({ ...s.coords, employeeId: r.employeeId }); }));
+      if (!points.length) { svg.innerHTML = '<text x="300" y="170" text-anchor="middle" fill="#94a3b8">Sin coordenadas disponibles</text>'; return; }
+
+      const lats = points.map(p => p.lat), lngs = points.map(p => p.lng);
+      const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+      const pad = 30;
+      const w = 600 - pad * 2, h = 340 - pad * 2;
+      const latRange = Math.max(maxLat - minLat, 0.001);
+      const lngRange = Math.max(maxLng - minLng, 0.001);
+
+      const project = (p) => ({
+        x: pad + ((p.lng - minLng) / lngRange) * w,
+        y: pad + ((maxLat - p.lat) / latRange) * h
+      });
+
+      const colors = ['#0284c7', '#06b6d4', '#d97706', '#dc2626'];
+      let svgContent = '';
+
+      routes.forEach((r, rIdx) => {
+        const color = colors[rIdx % colors.length];
+        const path = r.services.filter(s => s.coords).map(s => project(s.coords));
+        if (path.length > 1) {
+          const d = path.map((p, i) => (i === 0 ? 'M' : 'L') + p.x + ',' + p.y).join(' ');
+          svgContent += '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-dasharray="5,3"/>';
+        }
+        r.services.forEach((s, idx) => {
+          if (!s.coords) return;
+          const p = project(s.coords);
+          svgContent += '<circle cx="' + p.x + '" cy="' + p.y + '" r="10" fill="' + color + '" stroke="#fff" stroke-width="2"/>';
+          svgContent += '<text x="' + p.x + '" y="' + (p.y + 3.5) + '" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">' + (idx + 1) + '</text>';
+        });
+      });
+
+      svg.innerHTML = svgContent;
+    }
+
+    /* ===== SIGNATURE PAD ===== */
+    function initSignaturePad() {
+      const canvas = document.getElementById('signature-canvas'); if (!canvas) return;
+      ui.signaturePad = canvas; ui.signatureDrawing = false; ui.signatureEmpty = true;
+      const ctx = canvas.getContext('2d'); ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      const getPos = (e) => { const rect = canvas.getBoundingClientRect(); const sx = canvas.width / rect.width; const sy = canvas.height / rect.height; const p = e.touches ? e.touches[0] : e; return { x: (p.clientX - rect.left) * sx, y: (p.clientY - rect.top) * sy }; };
+      const start = (e) => { e.preventDefault(); const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); ui.signatureDrawing = true; ui.signatureEmpty = false; canvas.classList.add('signed'); };
+      const move = (e) => { if (!ui.signatureDrawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+      const end = () => { ui.signatureDrawing = false; };
+      canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); canvas.addEventListener('mouseup', end); canvas.addEventListener('mouseleave', end);
+      canvas.addEventListener('touchstart', start, { passive: false }); canvas.addEventListener('touchmove', move, { passive: false }); canvas.addEventListener('touchend', end);
+    }
+
+    function getGPS() {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) return resolve(null);
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+          () => resolve(null),
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+        );
+      });
+    }
+
+    /* ===== LINE EDITORS FOR INVOICES/QUOTES ===== */
+    let currentLines = [];
+    function renderInvoiceLines() {
+      const container = document.getElementById('invoice-lines'); if (!container) return;
+      container.innerHTML = currentLines.map((l, idx) => '<div class="quote-line"><input placeholder="Concepto" value="' + esc(l.description) + '" data-line-idx="' + idx + '" data-line-field="description"><input type="number" placeholder="Cant." value="' + esc(l.quantity) + '" data-line-idx="' + idx + '" data-line-field="quantity"><input type="number" placeholder="Precio" value="' + esc(l.unitPrice) + '" data-line-idx="' + idx + '" data-line-field="unitPrice"><select data-line-idx="' + idx + '" data-line-field="tax"><option value="0" ' + (l.tax == 0 ? 'selected' : '') + '>0%</option><option value="10" ' + (l.tax == 10 ? 'selected' : '') + '>10%</option><option value="21" ' + (l.tax == 21 ? 'selected' : '') + '>21%</option></select><button type="button" class="btn btn-danger btn-sm" data-action="remove-line" data-idx="' + idx + '">✕</button></div>').join('');
+      const total = currentLines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitPrice) || 0) * (1 + (Number(l.tax) || 0) / 100), 0);
+      const sum = document.getElementById('invoice-lines-sum');
+      if (!sum) {
+        const div = document.createElement('div'); div.id = 'invoice-lines-sum'; div.style.marginTop = '10px'; div.style.fontWeight = '700'; div.style.textAlign = 'right';
+        container.parentNode.insertBefore(div, container.nextSibling);
+      }
+      document.getElementById('invoice-lines-sum').textContent = 'Total: ' + money(total);
+    }
+
+    function renderQuoteLines() {
+      const container = document.getElementById('quote-lines'); if (!container) return;
+      container.innerHTML = currentLines.map((l, idx) => '<div class="quote-line"><input placeholder="Concepto" value="' + esc(l.description) + '" data-line-idx="' + idx + '" data-line-field="description"><input type="number" placeholder="Cant." value="' + esc(l.quantity) + '" data-line-idx="' + idx + '" data-line-field="quantity"><input type="number" placeholder="Precio" value="' + esc(l.unitPrice) + '" data-line-idx="' + idx + '" data-line-field="unitPrice"><select data-line-idx="' + idx + '" data-line-field="tax"><option value="0" ' + (l.tax == 0 ? 'selected' : '') + '>0%</option><option value="10" ' + (l.tax == 10 ? 'selected' : '') + '>10%</option><option value="21" ' + (l.tax == 21 ? 'selected' : '') + '>21%</option></select><button type="button" class="btn btn-danger btn-sm" data-action="remove-line" data-idx="' + idx + '">✕</button></div>').join('');
+      const total = currentLines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitPrice) || 0) * (1 + (Number(l.tax) || 0) / 100), 0);
+      let sum = document.getElementById('quote-lines-sum');
+      if (!sum) { sum = document.createElement('div'); sum.id = 'quote-lines-sum'; sum.style.marginTop = '10px'; sum.style.fontWeight = '700'; sum.style.textAlign = 'right'; container.parentNode.insertBefore(sum, container.nextSibling); }
+      sum.textContent = 'Total: ' + money(total);
+    }
+
+    /* ===== EXPORTS ===== */
+    function downloadText(filename, content, type) {
+      const blob = new Blob([content], { type: type || 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportInvoicePDF(inv) {
+      if (!window.jspdf) { toast('jsPDF no disponible', 'err'); return; }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const co = api.getCompany();
+      const client = api.getClient(inv.clientId);
+
+      doc.setFontSize(18); doc.text('FACTURA', 14, 20);
+      doc.setFontSize(10);
+      doc.text('Nº: ' + inv.number, 14, 28);
+      doc.text('Emisión: ' + fmtDate(inv.issueDate), 14, 34);
+      doc.text('Vencimiento: ' + fmtDate(inv.dueDate), 14, 40);
+      doc.text('Estado: ' + INVOICE_STATUS[inv.status][0], 14, 46);
+
+      doc.setFontSize(11); doc.setFont(undefined, 'bold');
+      doc.text('Emisor:', 140, 20); doc.setFont(undefined, 'normal');
+      doc.text(co.name, 140, 26); doc.text(co.address, 140, 32); doc.text(co.taxId, 140, 38);
+
+      doc.setFont(undefined, 'bold'); doc.text('Cliente:', 140, 50); doc.setFont(undefined, 'normal');
+      doc.text(client ? client.name : '—', 140, 56);
+      if (client && client.taxId) doc.text(client.taxId, 140, 62);
+      if (client) doc.text(client.address || '', 140, 68);
+
+      doc.autoTable({
+        startY: 85,
+        head: [['Concepto', 'Cant.', 'Precio', 'IVA', 'Total']],
+        body: (inv.items || []).map(i => {
+          const line = (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0);
+          const tax = line * ((Number(i.tax) || 0) / 100);
+          return [i.description, i.quantity, money(i.unitPrice), i.tax + '%', money(line + tax)];
+        }),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [2, 132, 199] }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 10;
+      doc.text('Subtotal: ' + money(inv.subtotal), 150, finalY);
+      doc.text('IVA: ' + money(inv.tax), 150, finalY + 6);
+      doc.setFontSize(13); doc.setFont(undefined, 'bold');
+      doc.text('TOTAL: ' + money(inv.total), 150, finalY + 14);
+
+      if (inv.notes) {
+        doc.setFontSize(10); doc.setFont(undefined, 'normal');
+        doc.text('Notas: ' + inv.notes, 14, finalY + 20, { maxWidth: 180 });
+      }
+
+      doc.save('factura-' + inv.number + '.pdf');
+      toast('PDF descargado', 'ok');
+    }
+
+    function exportQuotePDF(q) {
+      if (!window.jspdf) { toast('jsPDF no disponible', 'err'); return; }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const co = api.getCompany();
+      const client = api.getClient(q.clientId);
+
+      doc.setFontSize(18); doc.text('PRESUPUESTO', 14, 20);
+      doc.setFontSize(10);
+      doc.text('Nº: ' + q.number, 14, 28);
+      doc.text('Fecha: ' + fmtDate(q.createdAt), 14, 34);
+      doc.text('Estado: ' + QUOTE_STATUS[q.status][0], 14, 40);
+
+      doc.setFontSize(11); doc.setFont(undefined, 'bold');
+      doc.text('Emisor:', 140, 20); doc.setFont(undefined, 'normal');
+      doc.text(co.name, 140, 26); doc.text(co.address, 140, 32);
+
+      doc.setFont(undefined, 'bold'); doc.text('Cliente:', 140, 50); doc.setFont(undefined, 'normal');
+      doc.text(client ? client.name : '—', 140, 56);
+
+      doc.autoTable({
+        startY: 75,
+        head: [['Concepto', 'Cant.', 'Precio', 'Total']],
+        body: (q.items || []).map(i => [i.description, i.quantity, money(i.unitPrice), money((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0))]),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [2, 132, 199] }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 10;
+      doc.text('Subtotal: ' + money(q.subtotal), 150, finalY);
+      doc.text('IVA: ' + money(q.tax), 150, finalY + 6);
+      doc.setFontSize(13); doc.setFont(undefined, 'bold');
+      doc.text('TOTAL: ' + money(q.total), 150, finalY + 14);
+
+      doc.save('presupuesto-' + q.number + '.pdf');
+      toast('PDF descargado', 'ok');
+    }
+
+    function exportReportCSV() {
+      const stats = api.reportStats(ui.reportFrom, ui.reportTo);
+      const lines = [
+        ['REPORTE CLEANOPS'],
+        ['Periodo', ui.reportFrom, 'a', ui.reportTo],
+        [],
+        ['KPI', 'Valor'],
+        ['Total servicios', stats.totalServices],
+        ['Completados', stats.completed],
+        ['Cancelados', stats.canceled],
+        ['Tasa éxito (%)', stats.completionRate.toFixed(1)],
+        ['Ingresos', stats.revenue.toFixed(2)],
+        ['Facturado', stats.invoicedTotal.toFixed(2)],
+        ['Cobrado', stats.paidTotal.toFixed(2)],
+        ['Pendiente', stats.outstandingTotal.toFixed(2)],
+        ['Incidencias', stats.incidents],
+        [],
+        ['Empleado', 'Servicios', 'Ingresos']
+      ];
+      stats.byEmployee.forEach(e => lines.push([e.name, e.count, e.revenue.toFixed(2)]));
+      lines.push([]); lines.push(['Cliente', 'Servicios', 'Ingresos']);
+      stats.byClient.forEach(c => lines.push([c.name, c.count, c.revenue.toFixed(2)]));
+
+      const csv = lines.map(row => row.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+      downloadText('reporte-' + ui.reportFrom + '-' + ui.reportTo + '.csv', '\uFEFF' + csv, 'text/csv;charset=utf-8');
+      toast('CSV descargado', 'ok');
+    }
+
+    function exportReportPDF() {
+      if (!window.jspdf) { toast('jsPDF no disponible', 'err'); return; }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const stats = api.reportStats(ui.reportFrom, ui.reportTo);
+
+      doc.setFontSize(18); doc.text('Reporte CleanOps', 14, 20);
+      doc.setFontSize(11); doc.text('Periodo: ' + ui.reportFrom + ' a ' + ui.reportTo, 14, 28);
+
+      doc.autoTable({
+        startY: 40,
+        head: [['Métrica', 'Valor']],
+        body: [
+          ['Total servicios', stats.totalServices],
+          ['Completados', stats.completed],
+          ['Cancelados', stats.canceled],
+          ['Tasa de éxito', stats.completionRate.toFixed(1) + '%'],
+          ['Ingresos', money(stats.revenue)],
+          ['Facturado', money(stats.invoicedTotal)],
+          ['Cobrado', money(stats.paidTotal)],
+          ['Pendiente de cobro', money(stats.outstandingTotal)],
+          ['Incidencias', stats.incidents],
+          ['Valoración media', stats.avgRating + ' ★']
+        ]
+      });
+
+      if (stats.byEmployee.length) {
+        doc.text('Rendimiento por empleado', 14, doc.lastAutoTable.finalY + 14);
+        doc.autoTable({
+          startY: doc.lastAutoTable.finalY + 18,
+          head: [['Empleado', 'Servicios', 'Ingresos']],
+          body: stats.byEmployee.map(e => [e.name, e.count, money(e.revenue)])
+        });
+      }
+
+      if (stats.byClient.length) {
+        doc.text('Top clientes', 14, doc.lastAutoTable.finalY + 14);
+        doc.autoTable({
+          startY: doc.lastAutoTable.finalY + 18,
+          head: [['Cliente', 'Servicios', 'Ingresos']],
+          body: stats.byClient.slice(0, 10).map(c => [c.name, c.count, money(c.revenue)])
+        });
+      }
+
+      doc.save('reporte-' + ui.reportFrom + '-' + ui.reportTo + '.pdf');
+      toast('PDF descargado', 'ok');
+    }
+
+    function exportICS(dateStr, employeeId) {
+      const routes = api.computeRoute(dateStr);
+      const route = routes.find(r => r.employeeId === employeeId);
+      if (!route) { toast('Ruta no encontrada', 'err'); return; }
+
+      const escape = (s) => String(s || '').replace(/[\\;,]/g, c => '\\' + c).replace(/\n/g, '\\n');
+      const fmtICSDate = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+      let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//CleanOps//ES\r\nCALSCALE:GREGORIAN\r\n';
+      route.services.forEach((s, idx) => {
+        const [h, m] = (s.time || '09:00').split(':').map(Number);
+        const start = new Date(s.date + 'T' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00');
+        const end = new Date(start.getTime() + 60 * 60 * 1000);
+        const client = api.getClient(s.clientId);
+        ics += 'BEGIN:VEVENT\r\n';
+        ics += 'UID:' + s.id + '@cleanops\r\n';
+        ics += 'DTSTAMP:' + fmtICSDate(new Date()) + '\r\n';
+        ics += 'DTSTART:' + fmtICSDate(start) + '\r\n';
+        ics += 'DTEND:' + fmtICSDate(end) + '\r\n';
+        ics += 'SUMMARY:' + escape((idx + 1) + '. ' + s.title) + '\r\n';
+        ics += 'DESCRIPTION:' + escape('Cliente: ' + (client ? client.name : '—')) + '\r\n';
+        if (client && client.address) ics += 'LOCATION:' + escape(client.address) + '\r\n';
+        ics += 'END:VEVENT\r\n';
+      });
+      ics += 'END:VCALENDAR';
+
+      downloadText('ruta-' + dateStr + '.ics', ics, 'text/calendar;charset=utf-8');
+      toast('Calendario .ics descargado', 'ok');
+    }
+
+    /* ===== REMINDERS ===== */
+    function runReminders() {
+      if (!api.isAuthenticated()) return;
+      const now = new Date();
+      const user = api.getUser();
+      const seen = JSON.parse(safeStorage.get('cleanops_seen_' + user.userId) || '{}');
+
+      api.visibleServices().forEach(s => {
+        if (s.status !== 'programado' && s.status !== 'en_camino') return;
+        const dt = new Date(s.date + 'T' + s.time + ':00');
+        const diffMin = (dt - now) / 60000;
+        const key = 'svc30_' + s.id;
+        if (diffMin > 0 && diffMin <= 30 && !seen[key]) {
+          notify('⏰ Servicio en ' + Math.round(diffMin) + ' min: ' + s.title, 'warn');
+          seen[key] = true;
+        }
+      });
+
+      api.visibleIncidents().forEach(inc => {
+        const sla = api.slaInfo(inc);
+        if (!sla) return;
+        const key = 'inc_' + inc.status + '_' + inc.id;
+        if (sla.kind === 'late' && !seen[key + '_late']) { notify('⏰ SLA vencido: ' + inc.type, 'danger'); seen[key + '_late'] = true; }
+        else if (sla.kind === 'warn' && !seen[key + '_warn']) { notify('⚠️ Riesgo de SLA: ' + inc.type, 'warn'); seen[key + '_warn'] = true; }
+      });
+
+      // Vencidas invoices
+      api.db.invoices.forEach(inv => {
+        if (inv.status !== 'enviada') return;
+        if (inv.dueDate < localISO(new Date())) {
+          const key = 'inv_overdue_' + inv.id;
+          if (!seen[key]) { notify('💶 Factura vencida: ' + inv.number, 'danger'); seen[key] = true; }
+        }
+      });
+
+      safeStorage.set('cleanops_seen_' + user.userId, JSON.stringify(seen));
+    }
+
+    setInterval(runReminders, 60000);
+
+    /* ===== EVENT HANDLING ===== */
+    document.addEventListener('click', e => {
+      const el = e.target.closest('[data-action]'); if (!el) return;
+      const action = el.dataset.action; const id = el.dataset.id;
+
+      if (action === 'toggle-menu') $('#sidebar').classList.toggle('open');
+      else if (action === 'nav') { ui.section = el.dataset.section; $('#sidebar').classList.remove('open'); render(); }
+      else if (action === 'logout') { api.logout(); ui.section = 'calendar'; render(); }
+      else if (action === 'reset-demo') { if (confirm('¿Restablecer datos?')) { api.reset(); api.logout(); render(); toast('Demo restablecida', 'ok'); } }
+      else if (action === 'close-modal') closeModal();
+      else if (action === 'cal-prev') { ui.calMonth--; if (ui.calMonth < 0) { ui.calMonth = 11; ui.calYear--; } render(); }
+      else if (action === 'cal-next') { ui.calMonth++; if (ui.calMonth > 11) { ui.calMonth = 0; ui.calYear++; } render(); }
+      else if (action === 'new-client') openModal(clientFormHTML());
+      else if (action === 'edit-client') { const c = api.get('clients', id); if (c) openModal(clientFormHTML(c)); }
+      else if (action === 'delete-client') { if (confirm('¿Eliminar cliente y servicios asociados?')) { try { api.deleteClient(id); render(); toast('Cliente eliminado', 'ok'); } catch (err) { toast(err.message, 'err'); } } }
+      else if (action === 'new-employee') openModal(employeeFormHTML());
+      else if (action === 'edit-employee') { const e = api.get('employees', id); if (e) openModal(employeeFormHTML(e)); }
+      else if (action === 'delete-employee') { if (confirm('¿Eliminar empleado?')) { try { api.deleteEmployee(id); render(); toast('Empleado eliminado', 'ok'); } catch (err) { toast(err.message, 'err'); } } }
+      else if (action === 'new-service') { if (!canCreateService()) { toast('Sin permiso', 'err'); return; } openModal(serviceFormHTML()); }
+      else if (action === 'new-service-date') { if (!canCreateService()) { toast('Sin permiso', 'err'); return; } openModal(serviceFormHTML(null, el.dataset.date)); }
+      else if (action === 'edit-service') { const s = api.get('services', id); if (s) openModal(serviceFormHTML(s)); }
+      else if (action === 'view-service') {
+        const s = api.get('services', id); if (!s) return;
+        if (!canEditService(s)) { toast('Sin permiso', 'err'); return; }
+        ui.currentServiceId = id; ui.serviceTab = el.dataset.tab || 'resumen';
+        openModal(serviceDetailHTML(s), () => {
+          if (ui.serviceTab === 'signature') initSignaturePad();
+          if (ui.serviceTab === 'qr') { const c = document.getElementById('qr-canvas'); if (c && window.QRCode) try { QRCode.toCanvas(c, 'CLEANOPS:' + s.id + '|' + s.date + 'T' + s.time, { width: 240, margin: 2 }); } catch (err) {} }
+          if (ui.serviceTab === 'chat') { const b = document.getElementById('chat-box'); if (b) b.scrollTop = b.scrollHeight; }
+        });
+      }
+      else if (action === 'svc-tab') {
+        ui.serviceTab = el.dataset.tab;
+        const s = api.get('services', ui.currentServiceId);
+        if (s) openModal(serviceDetailHTML(s), () => {
+          if (ui.serviceTab === 'signature') initSignaturePad();
+          if (ui.serviceTab === 'qr') { const c = document.getElementById('qr-canvas'); if (c && window.QRCode) try { QRCode.toCanvas(c, 'CLEANOPS:' + s.id + '|' + s.date + 'T' + s.time, { width: 240, margin: 2 }); } catch (err) {} }
+          if (ui.serviceTab === 'chat') { const b = document.getElementById('chat-box'); if (b) b.scrollTop = b.scrollHeight; }
+        });
+      }
+      else if (action === 'delete-service') { if (confirm('¿Eliminar servicio?')) { try { api.deleteService(id); closeModal(); render(); toast('Eliminado', 'ok'); } catch (err) { toast(err.message, 'err'); } } }
+      else if (action === 'svc-checkin') { toast('Obteniendo GPS...'); getGPS().then(coords => { try { api.checkInService(id, coords); notify('📍 Check-in', 'ok'); const s = api.get('services', id); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } }); }
+      else if (action === 'svc-checkout') { toast('Obteniendo GPS...'); getGPS().then(coords => { try { api.checkoutService(id, coords); notify('🏁 Check-out', 'ok'); const s = api.get('services', id); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } }); }
+      else if (action === 'svc-start') { try { api.startService(id); toast('Iniciado', 'ok'); const s = api.get('services', id); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'svc-finalize') { try { api.finalizeService(id); notify('✅ Finalizado', 'ok'); const s = api.get('services', id); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'svc-validate') { try { api.validateService(id); notify('⭐ Validado', 'ok'); const s = api.get('services', id); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'svc-cancel') { if (confirm('¿Cancelar?')) { try { api.updateServiceField(id, { status: 'cancelado' }); toast('Cancelado'); const s = api.get('services', id); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } } }
+      else if (action === 'toggle-task') { try { api.toggleTask(el.dataset.service, el.dataset.task); const s = api.get('services', el.dataset.service); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'remove-task') { if (confirm('¿Eliminar tarea?')) { try { api.removeTask(el.dataset.service, el.dataset.task); const s = api.get('services', el.dataset.service); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } } }
+      else if (action === 'remove-evidence') { if (confirm('¿Eliminar foto?')) { try { api.removeEvidence(el.dataset.service, el.dataset.evidence); const s = api.get('services', el.dataset.service); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } } }
+      else if (action === 'clear-signature') { if (confirm('¿Borrar firma?')) { try { api.updateServiceField(id, { signature: null }); toast('Borrada'); const s = api.get('services', id); if (s) openModal(serviceDetailHTML(s), initSignaturePad); } catch (err) { toast(err.message, 'err'); } } }
+      else if (action === 'clear-signature-canvas') { const c = ui.signaturePad; if (c) { c.getContext('2d').clearRect(0, 0, c.width, c.height); c.classList.remove('signed'); ui.signatureEmpty = true; } }
+      else if (action === 'save-signature') {
+        if (ui.signatureEmpty) { toast('Dibuja una firma primero', 'err'); return; }
+        const c = ui.signaturePad; if (!c) return;
+        try { const d = c.toDataURL('image/png'); api.saveSignature(id, d); notify('✍️ Firma guardada', 'ok'); const s = api.get('services', id); if (s) openModal(serviceDetailHTML(s), initSignaturePad); }
+        catch (err) { toast(err.message, 'err'); }
+      }
+      else if (action === 'view-incident') { const inc = api.get('incidents', id); if (inc) openModal(incidentDetailHTML(inc), () => { const b = document.getElementById('inc-chat'); if (b) b.scrollTop = b.scrollHeight; }); }
+      else if (action === 'new-incident-from-service') openModal(incidentFormHTML(id));
+      else if (action === 'new-incident') openModal(incidentFormHTML());
+      else if (action === 'reschedule') { const s = api.get('services', id); if (s) openModal(rescheduleFormHTML(s)); }
+      else if (action === 'invoice-from-service') { try { const inv = api.invoiceFromService(id); toast('Factura creada: ' + inv.number, 'ok'); render(); openModal(invoiceDetailHTML(inv)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'view-invoice') { const inv = api.get('invoices', id); if (inv) openModal(invoiceDetailHTML(inv)); }
+      else if (action === 'view-quote') { const q = api.get('quotes', id); if (q) openModal(quoteDetailHTML(q)); }
+      else if (action === 'download-invoice') { const inv = api.get('invoices', id); if (inv) exportInvoicePDF(inv); }
+      else if (action === 'download-quote') { const q = api.get('quotes', id); if (q) exportQuotePDF(q); }
+      else if (action === 'email-invoice') {
+        const inv = api.get('invoices', id); const client = inv ? api.getClient(inv.clientId) : null;
+        if (!inv || !client || !client.email) { toast('Sin email de cliente', 'err'); return; }
+        const subject = encodeURIComponent('Factura ' + inv.number + ' de CleanOps');
+        const body = encodeURIComponent('Hola,\n\nAdjuntamos la factura ' + inv.number + ' por importe de ' + money(inv.total) + '.\nVencimiento: ' + fmtDate(inv.dueDate) + '\n\nUn saludo,\n' + api.getCompany().name);
+        window.location.href = 'mailto:' + client.email + '?subject=' + subject + '&body=' + body;
+      }
+      else if (action === 'whatsapp-invoice') {
+        const inv = api.get('invoices', id); const client = inv ? api.getClient(inv.clientId) : null;
+        if (!inv || !client || !client.phone) { toast('Sin teléfono', 'err'); return; }
+        const text = encodeURIComponent('Hola ' + client.name + ', tu factura ' + inv.number + ' por ' + money(inv.total) + ' vence el ' + fmtDate(inv.dueDate));
+        window.open('https://wa.me/' + client.phone.replace(/\D/g, '') + '?text=' + text, '_blank');
+      }
+      else if (action === 'invoice-to-sent') { try { api.updateInvoiceStatus(id, 'enviada'); toast('Marcada como enviada', 'ok'); render(); const inv = api.get('invoices', id); if (inv) openModal(invoiceDetailHTML(inv)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'invoice-to-paid') { try { api.updateInvoiceStatus(id, 'pagada'); notify('💰 Factura pagada', 'ok'); render(); const inv = api.get('invoices', id); if (inv) openModal(invoiceDetailHTML(inv)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'client-pay') {
+        const inv = api.get('invoices', id); if (!inv) return;
+        openModal('<h2>💳 Pago online (simulado)</h2><div class="info-box"><b>Factura ' + esc(inv.number) + '</b><br>Total: <b>' + money(inv.total) + '</b></div><form data-form="simulate-pay" data-id="' + id + '"><div class="field"><label>Método de pago</label><select name="method"><option>Tarjeta de crédito</option><option>Transferencia SEPA</option><option>Bizum</option><option>PayPal</option></select></div><div class="field"><label>Referencia</label><input name="ref" placeholder="Ej: TKT-123456" required></div><div class="modal-actions"><span style="flex:1"></span><button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn-primary">Confirmar pago ' + money(inv.total) + '</button></div></form>');
+      }
+      else if (action === 'quote-to-sent') { try { api.update('quotes', id, { status: 'enviado' }); toast('Enviado', 'ok'); render(); const q = api.get('quotes', id); if (q) openModal(quoteDetailHTML(q)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'quote-to-accept') { try { api.update('quotes', id, { status: 'aceptado' }); notify('✓ Presupuesto aceptado', 'ok'); render(); const q = api.get('quotes', id); if (q) openModal(quoteDetailHTML(q)); } catch (err) { toast(err.message, 'err'); } }
+      else if (action === 'quote-to-reject') { if (confirm('¿Rechazar presupuesto?')) { try { api.update('quotes', id, { status: 'rechazado' }); toast('Rechazado'); render(); const q = api.get('quotes', id); if (q) openModal(quoteDetailHTML(q)); } catch (err) { toast(err.message, 'err'); } } }
+      else if (action === 'convert-quote-to-invoice') {
+        const q = api.get('quotes', id); if (!q) return;
+        try {
+          const inv = api.create('invoices', { clientId: q.clientId, serviceIds: [], issueDate: localISO(new Date()), dueDate: addDaysISO(30), items: q.items, notes: 'Convertido desde presupuesto ' + q.number });
+          toast('Factura creada: ' + inv.number, 'ok'); render(); openModal(invoiceDetailHTML(inv));
+        } catch (err) { toast(err.message, 'err'); }
+      }
+      else if (action === 'edit-quote') { const q = api.get('quotes', id); if (q) openModal(quoteFormHTML(q)); }
+      else if (action === 'new-invoice') { currentLines = [{ description: '', quantity: 1, unitPrice: 0, tax: 21 }]; openModal(invoiceFormHTML(), renderInvoiceLines); }
+      else if (action === 'new-quote') { currentLines = [{ description: '', quantity: 1, unitPrice: 0, tax: 21 }]; openModal(quoteFormHTML(), renderQuoteLines); }
+      else if (action === 'add-invoice-line') { currentLines.push({ description: '', quantity: 1, unitPrice: 0, tax: 21 }); renderInvoiceLines(); }
+      else if (action === 'add-quote-line') { currentLines.push({ description: '', quantity: 1, unitPrice: 0, tax: 21 }); renderQuoteLines(); }
+      else if (action === 'remove-line') { const idx = Number(el.dataset.idx); currentLines.splice(idx, 1); if (document.getElementById('invoice-lines')) renderInvoiceLines(); else renderQuoteLines(); }
+      else if (action === 'billing-tab') { ui.billingTab = el.dataset.tab; render(); }
+      else if (action === 'export-ics') exportICS(el.dataset.date, el.dataset.employee);
+      else if (action === 'report-range') {
+        const now = new Date();
+        if (el.dataset.range === 'month') { ui.reportFrom = localISO(new Date(now.getFullYear(), now.getMonth(), 1)); ui.reportTo = localISO(now); }
+        else if (el.dataset.range === 'quarter') { ui.reportFrom = localISO(new Date(now.getFullYear(), now.getMonth() - 3, 1)); ui.reportTo = localISO(now); }
+        else if (el.dataset.range === 'year') { ui.reportFrom = localISO(new Date(now.getFullYear(), 0, 1)); ui.reportTo = localISO(now); }
+        render();
+      }
+      else if (action === 'export-report') { if (el.dataset.format === 'csv') exportReportCSV(); else exportReportPDF(); }
+    });
+
+    document.addEventListener('change', e => {
+      const el = e.target;
+      if (el.matches('input[data-action="add-evidence"]')) {
+        const file = el.files && el.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = () => { try { api.addEvidence(el.dataset.id, r.result); notify('📷 Foto añadida', 'ok'); const s = api.get('services', el.dataset.id); if (s) openModal(serviceDetailHTML(s)); } catch (err) { toast(err.message, 'err'); } };
+        r.readAsDataURL(file);
+      } else if (el.matches('input[data-attach-input]')) {
+        const sid = el.dataset.attachInput;
+        const preview = document.getElementById('chat-attach-preview-' + sid);
+        if (preview) { const f = el.files && el.files[0]; preview.textContent = f ? '📎 ' + f.name : ''; }
+      } else if (el.matches('[data-line-field]')) {
+        const idx = Number(el.dataset.lineIdx);
+        const field = el.dataset.lineField;
+        let v = el.value;
+        if (field === 'quantity' || field === 'unitPrice' || field === 'tax') v = Number(v) || 0;
+        currentLines[idx][field] = v;
+        if (document.getElementById('invoice-lines')) renderInvoiceLines(); else renderQuoteLines();
+        // update form dataset
+        const form = el.closest('form');
+        if (form) form.dataset.items = JSON.stringify(currentLines);
+      } else if (el.matches('input[data-change="route-date"]')) { ui.routeDate = el.value; setTimeout(drawRouteSVG, 50); }
+      else if (el.matches('input[data-change="report-from"]')) { ui.reportFrom = el.value; render(); }
+      else if (el.matches('input[data-change="report-to"]')) { ui.reportTo = el.value; render(); }
+    });
+
+    document.addEventListener('submit', e => {
+      const form = e.target;
+      if (form.id === 'login-form') { handleLoginSubmit(e); return; }
+      if (form.dataset.form === 'add-task') {
+        e.preventDefault();
+        const data = collectForm(form);
+        if (!data.name || data.name.trim().length < 2) { toast('Nombre corto', 'err'); return; }
+        try { api.addTask(form.dataset.service, data.name.trim()); toast('Añadida', 'ok'); const s = api.get('services', form.dataset.service); if (s) openModal(serviceDetailHTML(s)); }
+        catch (err) { toast(err.message, 'err'); }
+        return;
+      }
+      if (form.dataset.form === 'send-message') {
+        e.preventDefault();
+        const serviceId = form.dataset.service;
+        const data = collectForm(form);
+        const fileInput = form.querySelector('input[type=file]');
+        const file = fileInput && fileInput.files && fileInput.files[0];
+        const doSend = (attachment) => {
+          try { api.sendMessage(serviceId, data.text || '', attachment); form.reset(); const p = document.getElementById('chat-attach-preview-' + serviceId); if (p) p.textContent = ''; const s = api.get('services', serviceId); if (s) openModal(serviceDetailHTML(s), () => { const b = document.getElementById('chat-box'); if (b) b.scrollTop = b.scrollHeight; }); }
+          catch (err) { toast(err.message, 'err'); }
+        };
+        if (file) { const r = new FileReader(); r.onload = () => doSend({ name: file.name, data: r.result }); r.readAsDataURL(file); }
+        else doSend(null);
+        return;
+      }
+      if (form.dataset.form === 'incident-comment') {
+        e.preventDefault();
+        const data = collectForm(form);
+        try { api.addIncidentComment(form.dataset.id, data.text); toast('Comentario añadido', 'ok'); const inc = api.get('incidents', form.dataset.id); if (inc) openModal(incidentDetailHTML(inc), () => { const b = document.getElementById('inc-chat'); if (b) b.scrollTop = b.scrollHeight; }); }
+        catch (err) { toast(err.message, 'err'); }
+        return;
+      }
+      if (form.dataset.form === 'incident-update') {
+        e.preventDefault();
+        const data = collectForm(form);
+        try { api.updateIncidentStatus(form.dataset.id, data.status, data.responsibleId); toast('Actualizada', 'ok'); render(); const inc = api.get('incidents', form.dataset.id); if (inc) openModal(incidentDetailHTML(inc)); }
+        catch (err) { toast(err.message, 'err'); }
+        return;
+      }
+      if (form.dataset.form === 'reschedule') {
+        e.preventDefault();
+        const data = collectForm(form);
+        if (!validateEntityForm('reschedule', data, null, form)) { toast('Revisa los campos', 'err'); return; }
+        try {
+          api.rescheduleService(form.dataset.id, data.date, data.time, data.reason);
+          closeModal(); toast('Reprogramado', 'ok'); render();
+          notify('📅 Servicio reprogramado a ' + data.date + ' ' + data.time);
+        } catch (err) { toast(err.message, 'err'); }
+        return;
+      }
+      if (form.dataset.form === 'simulate-pay') {
+        e.preventDefault();
+        const data = collectForm(form);
+        try {
+          api.updateInvoiceStatus(form.dataset.id, 'pagada');
+          closeModal(); notify('💳 Pago registrado: ' + data.method, 'ok'); render();
+          const inv = api.get('invoices', form.dataset.id); if (inv) openModal(invoiceDetailHTML(inv));
+        } catch (err) { toast(err.message, 'err'); }
+        return;
+      }
+
+      handleEntityFormSubmit(e);
+    });
+
+    $('#modal-overlay').addEventListener('click', e => { if (e.target.id === 'modal-overlay') closeModal(); });
+    document.addEventListener('keydown', e => {
+      const overlay = $('#modal-overlay');
+      const isOpen = overlay.classList.contains('open');
+      if (e.key === 'Escape' && isOpen) closeModal();
+      if (e.key === 'Tab' && isOpen) {
+        const f = $('#modal-content').querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!f.length) return;
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+
+    render();
+    setTimeout(runReminders, 2000);
+  </script>
+</body>
+</html>
