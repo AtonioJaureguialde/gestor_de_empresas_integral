@@ -20,6 +20,8 @@ export class Router {
         this.currentView = null;
         this.mainContent = document.getElementById('mainContent');
         this.navLinks = document.querySelectorAll('.nav-menu a');
+        this.navMenu = document.getElementById('navMenu');
+        this.menuToggle = document.getElementById('menuToggle');
         
         this.views = {
             calendar: new CalendarView(),
@@ -42,7 +44,26 @@ export class Router {
                 e.preventDefault();
                 const viewName = link.dataset.view;
                 this.navigate(viewName);
+                
+                // Cerrar menú móvil al seleccionar
+                if (this.menuToggle) {
+                    this.navMenu.classList.remove('active');
+                }
             });
+        });
+
+        // Toggle menú móvil
+        if (this.menuToggle) {
+            this.menuToggle.addEventListener('click', () => {
+                this.navMenu.classList.toggle('active');
+            });
+        }
+
+        // Cerrar menú al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (this.navMenu && !this.navMenu.contains(e.target) && !this.menuToggle.contains(e.target)) {
+                this.navMenu.classList.remove('active');
+            }
         });
 
         // Cargar vista por defecto

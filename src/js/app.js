@@ -11,7 +11,7 @@ import { Toast } from './ui/toast.js';
 class App {
     constructor() {
         this.auth = new Auth();
-        this.router = new Router(this.auth);
+        this.router = null;
         this.init();
     }
 
@@ -24,6 +24,7 @@ class App {
                 this.showLogin();
             } else {
                 this.loadUser();
+                this.router = new Router(this.auth);
                 this.router.init();
             }
 
@@ -33,21 +34,38 @@ class App {
     }
 
     showLogin() {
+        const app = document.getElementById('app');
+        const header = document.querySelector('.main-header');
         const mainContent = document.getElementById('mainContent');
-        mainContent.innerHTML = `
-            <div class="phase1-welcome">
-                <h1>Bienvenido a CleanOps</h1>
-                <p>Sistema de Gestión de Limpieza Profesional</p>
-                <button id="loginBtn" class="btn btn-primary mt-2">Iniciar Sesión</button>
-            </div>
-        `;
-
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            this.auth.login();
-            this.loadUser();
-            this.router.init();
-            Toast.show('¡Bienvenido!', 'success');
-        });
+        
+        // Ocultar header en login
+        if (header) header.classList.add('hidden');
+        
+        // Mostrar formulario de login
+        mainContent.innerHTML = this.auth.getLoginForm();
+        
+        // Configurar evento del formulario
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                const result = this.auth.login(email, password);
+                
+                if (result.success) {
+                    if (header) header.classList.remove('hidden');
+                    this.loadUser();
+                    this.router = new Router(this.auth);
+                    this.router.init();
+                    Toast.show(`¡Bienvenido ${result.user.name}!`, 'success');
+                } else {
+                    Toast.show(result.error, 'danger');
+                }
+            });
+        }
     }
 
     loadUser() {
