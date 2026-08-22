@@ -1,1 +1,4 @@
-(index.html is a source file, so no .gitignore rules needed)
+```
+node_modules/
+package-lock.json
+```
